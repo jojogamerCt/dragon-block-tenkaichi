@@ -18,6 +18,7 @@
     "client.LocalPlayerMixin",
     "client.RenderPipelinesAccessor",
     "client.RenderTypeInvoker",
+    "client.HudMixin",
     "client.MinecraftMixin",
     "client.MouseHandlerMixin",
     "client.PlayerModelMixin"
