@@ -266,6 +266,11 @@ def menu():
     finish(brand(img), "08_character_menu")
 
 
+def roshi():
+    hero("roshi", "MASTER ROSHI", "The Turtle Hermit of Kame House teaches the Kamehameha", "09_master_roshi", 0.5, 0.5, 1.0,
+         color=(255, 170, 40))
+
+
 def destruction():
     hero("big_bang_crater", "DESTRUCTION!", "Big Bang Attack craters and explosions that grow with your power", "09_destruction", 0.5, 0.5, 1.1)
 
@@ -279,3 +284,4 @@ if __name__ == "__main__":
     trials()
     kaioken()
     menu()
+    roshi()

@@ -50,15 +50,14 @@ Preparazione: copiare il mondo del server di test in `runs/client/saves/dbt_test
 ./scripts/gw.sh :neoforge:runClient -PdbtSmoke
 ```
 
-Il client entra nel mondo con Quick Play ed esegue `ClientSmokeTest`, ridotto alle novità della 0.3.0:
-editor del personaggio, HUD con icone vanilla, aura con particelle pixel art, le quattro schede del menu
-personaggio a schermo intero (anche dopo lo scorrimento), menu di allenamento, sfera Ki, Kamehameha e colpi in
-volo; controlla che tutti gli eventi sonori della mod siano risolti dal client. Salva gli screenshot in
+Il client entra nel mondo con Quick Play ed esegue `ClientSmokeTest`, ridotto alle ultime novità: fotografa il
+Maestro Muten da davanti, di lato, da dietro, di tre quarti e da vicino, poi rimuove e rimette le forme dal menu
+U controllando che la trasformazione salti quelle non equipaggiate (base -> Super Saiyan 2), che il ritorno salti
+il Super Saiyan e che togliere la forma attuale riporti alla base. Salva gli screenshot in
 `runs/client/screenshots/dbt_*.png` e chiude il gioco.
 
-Lo smoke test del server verifica la registrazione di tutti i 40 eventi sonori (compresi i quattro nuovi suoni
-da scouter) e i suoni vanilla sovrapposti: passi e cadute sul blocco sotto i piedi (saltati a mezz'aria),
-colpi corpo a corpo dell'IA, raggio ed esplosione.
+Lo smoke test del server verifica la registrazione dei 40 eventi sonori, i suoni vanilla sovrapposti e la logica
+delle forme equipaggiate (prossima forma, ritorno, salvataggio e caricamento).
 
 ## 5. Verificato visivamente (dagli screenshot)
 

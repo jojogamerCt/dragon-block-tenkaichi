@@ -366,6 +366,12 @@ def build():
     add("screen.dbtenkaichi.character.drag_hint", "Drag to rotate · Scroll to zoom", "Trascina per ruotare · Rotella per lo zoom")
     add("screen.dbtenkaichi.character.close", "Close", "Chiudi")
     add("screen.dbtenkaichi.character.height", "Height %s cm", "Altezza %s cm")
+    add("screen.dbtenkaichi.character.equip", "Equip", "Equipaggia")
+    add("screen.dbtenkaichi.character.unequip", "Unequip", "Rimuovi")
+    add("screen.dbtenkaichi.character.equipped", "Equipped: used to transform", "Equipaggiata: in uso")
+    add("screen.dbtenkaichi.character.unequipped", "Unequipped: skipped", "Non equipaggiata: saltata")
+    add("message.dbtenkaichi.form_equipped", "%s equipped: transforming will use it.", "%s equipaggiata: la trasformazione la userà.")
+    add("message.dbtenkaichi.form_unequipped", "%s unequipped: transforming will skip it.", "%s rimossa: la trasformazione la salterà.")
     return en, it
 
 

@@ -86,6 +86,31 @@ public final class SmokeTest {
         }
         check(missing.isEmpty() && ModSounds.NAMES.size() == 40, "all " + ModSounds.NAMES.size() + " sound events registered " + missing);
         check(ModSounds.UI_OPEN.get() != null && ModSounds.UI_TAB.get() != null && ModSounds.UI_UPGRADE.get() != null && ModSounds.UI_DENY.get() != null, "scouter UI sound events registered");
+        equipChecks();
+    }
+
+    private static void equipChecks() {
+        com.dbtenkaichi.player.PlayerData data = new com.dbtenkaichi.player.PlayerData();
+        data.setRace(com.dbtenkaichi.race.Race.SAIYAN);
+        String ssj = "dbtenkaichi:super_saiyan";
+        String ssj2 = "dbtenkaichi:super_saiyan_2";
+        String ssj3 = "dbtenkaichi:super_saiyan_3";
+        data.unlockForm(ssj);
+        data.unlockForm(ssj2);
+        com.dbtenkaichi.form.FormDefinition next = com.dbtenkaichi.form.TransformationSystem.nextEquipped(data, com.dbtenkaichi.player.PlayerData.BASE_FORM);
+        check(next != null && ssj.equals(next.id), "with every form equipped, transforming from base goes to Super Saiyan");
+        data.setFormEquipped(ssj, false);
+        next = com.dbtenkaichi.form.TransformationSystem.nextEquipped(data, com.dbtenkaichi.player.PlayerData.BASE_FORM);
+        check(next != null && ssj2.equals(next.id), "an unequipped Super Saiyan is skipped: base goes straight to Super Saiyan 2");
+        check(com.dbtenkaichi.player.PlayerData.BASE_FORM.equals(com.dbtenkaichi.form.TransformationSystem.equippedAncestor(data, ssj)), "reverting from Super Saiyan 2 skips the unequipped Super Saiyan");
+        data.setFormEquipped(ssj2, false);
+        next = com.dbtenkaichi.form.TransformationSystem.nextEquipped(data, com.dbtenkaichi.player.PlayerData.BASE_FORM);
+        check(next != null && ssj3.equals(next.id), "with SSJ and SSJ2 unequipped the next form is the still-locked Super Saiyan 3 (trial prompt)");
+        com.dbtenkaichi.player.PlayerData copy = new com.dbtenkaichi.player.PlayerData();
+        copy.load(data.save());
+        check(!copy.isFormEquipped(ssj) && !copy.isFormEquipped(ssj2) && copy.isFormEquipped(ssj3), "unequipped forms are saved and loaded");
+        data.setFormEquipped(ssj, true);
+        check(data.isFormEquipped(ssj), "forms can be equipped again");
     }
 
     private static void spawn(ServerLevel level) {

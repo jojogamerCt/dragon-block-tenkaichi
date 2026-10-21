@@ -56,7 +56,7 @@ public final class TransformationSystem {
         if (rt.busy(now) || rt.activeBeam >= 0 || rt.clashId >= 0) {
             return;
         }
-        FormDefinition next = FormRegistry.next(data.race(), data.form(), false);
+        FormDefinition next = nextEquipped(data, data.form());
         if (next == null) {
             player.sendSystemMessage(Component.translatable("message.dbtenkaichi.no_next_form"));
             return;
@@ -166,7 +166,7 @@ public final class TransformationSystem {
             return;
         }
         FormDefinition current = FormRegistry.get(data.form(), false);
-        String target = current == null ? PlayerData.BASE_FORM : current.parent;
+        String target = equippedAncestor(data, current == null ? PlayerData.BASE_FORM : current.parent);
         data.setForm(target);
         rt.stateDirty = true;
         rt.dataDirty = true;
@@ -174,6 +174,55 @@ public final class TransformationSystem {
         PlayerManager.applyAttributes(player, data);
         CombatSystem.playSound(player.level(), player, ModSounds.REVERT.get(), 1.0f, 1.0f);
         CombatSystem.anim(player, AnimClip.POWER_UP, 8, 1);
+    }
+
+    public static @Nullable FormDefinition nextEquipped(PlayerData data, String from) {
+        FormDefinition next = FormRegistry.next(data.race(), from, false);
+        int guard = 0;
+        while (next != null && data.hasUnlockedForm(next.id) && !data.isFormEquipped(next.id) && guard++ < 32) {
+            next = FormRegistry.next(data.race(), next.id, false);
+        }
+        return next;
+    }
+
+    public static String equippedAncestor(PlayerData data, String formId) {
+        String target = formId;
+        int guard = 0;
+        while (!PlayerData.BASE_FORM.equals(target) && !data.isFormEquipped(target) && guard++ < 32) {
+            FormDefinition form = FormRegistry.get(target, false);
+            target = form == null ? PlayerData.BASE_FORM : form.parent;
+        }
+        return target;
+    }
+
+    public static void toggleEquipped(ServerPlayer player, PlayerData data, int index, long now) {
+        java.util.List<FormDefinition> chain = new java.util.ArrayList<>(FormRegistry.chainFor(data.race(), false));
+        if (!data.isCreated() || index < 0 || index >= chain.size()) {
+            return;
+        }
+        FormDefinition form = chain.get(index);
+        if (!data.hasUnlockedForm(form.id)) {
+            return;
+        }
+        boolean equip = !data.isFormEquipped(form.id);
+        data.setFormEquipped(form.id, equip);
+        RuntimeState rt = data.runtime();
+        rt.dataDirty = true;
+        if (!equip && data.isTransformed() && rt.transformingUntil <= now && !data.isFormEquipped(data.form())) {
+            data.setForm(equippedAncestor(data, data.form()));
+            if (rt.kaioken > 0) {
+                FormDefinition current = FormRegistry.get(data.form(), false);
+                if (current != null && !current.kaiokenCompatible) {
+                    rt.kaioken = 0;
+                }
+            }
+            rt.stateDirty = true;
+            PlayerManager.refreshCaches(player, data);
+            PlayerManager.applyAttributes(player, data);
+            CombatSystem.playSound(player.level(), player, ModSounds.REVERT.get(), 1.0f, 1.0f);
+        }
+        CombatSystem.playSound(player.level(), player, equip ? ModSounds.UI_CONFIRM.get() : ModSounds.UI_TAB.get(), 0.8f, equip ? 1.1f : 0.9f);
+        player.sendSystemMessage(Component.translatable(equip ? "message.dbtenkaichi.form_equipped" : "message.dbtenkaichi.form_unequipped", Component.translatable(form.name)));
     }
 
     public static void forceRevert(ServerPlayer player, PlayerData data, @Nullable Component reason) {

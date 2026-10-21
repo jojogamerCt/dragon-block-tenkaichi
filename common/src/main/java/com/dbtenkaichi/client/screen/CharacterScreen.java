@@ -328,11 +328,17 @@ public class CharacterScreen extends Screen {
         for (int i = 0; i < chain.size(); i++) {
             FormDefinition form = chain.get(i);
             boolean unlocked = data.hasUnlockedForm(form.id);
-            boolean trialForm = !unlocked && "trial".equals(form.requirements.unlock);
-            int cardH = trialForm ? 39 + requirements(null, data, form, cx + 27, 0) * 10 : 44;
+            boolean equipped = unlocked && data.isFormEquipped(form.id);
+            int cardH = unlocked ? 48 : 39 + requirements(null, data, form, cx + 27, 0) * 10;
             if (g == null) {
-                if (!unlocked && "trial".equals(form.requirements.unlock)) {
-                    final int index = i;
+                final int index = i;
+                if (unlocked) {
+                    TenkaichiButton toggle = TenkaichiButton.create(Component.translatable(equipped ? "screen.dbtenkaichi.character.unequip" : "screen.dbtenkaichi.character.equip"), b -> {
+                        Services.NETWORK.sendToServer(new Packets.Action(ActionType.FORM_EQUIP.ordinal(), index));
+                    }).bounds(cx + cw - 62, y + 4, 58, 15).build();
+                    toggle.selected = !equipped;
+                    place(toggle);
+                } else if ("trial".equals(form.requirements.unlock)) {
                     Button trial = TenkaichiButton.create(Component.translatable("screen.dbtenkaichi.character.trial"), b -> {
                         Services.NETWORK.sendToServer(new Packets.Action(ActionType.FORM_TRIAL.ordinal(), index));
                         onClose();
@@ -343,25 +349,21 @@ public class CharacterScreen extends Screen {
             } else {
                 int color = 0xFF000000 | FormDefinition.parseColor(form.visual.auraColor, 0xFFFFFF);
                 TenkaichiUi.card(g, cx, y, cw, cardH - 3);
-                if (unlocked) {
+                if (equipped) {
                     g.fill(cx + 1, y + 1, cx + 3, y + cardH - 4, color);
                 }
-                TenkaichiUi.sprite(g, TenkaichiUi.ball(i + 1), cx + 6, y + 5, 16, 16, unlocked ? 0xFFFFFFFF : 0xFF8A8A8A);
-                g.text(this.font, Component.translatable(form.name), cx + 27, y + 5, unlocked ? color : 0xFF9AA0B8, true);
-                Component mult = Component.translatable("screen.dbtenkaichi.character.multiplier", (int) form.bpMultiplier);
-                if (unlocked || !"trial".equals(form.requirements.unlock)) {
-                    g.text(this.font, mult, cx + cw - 6 - this.font.width(mult), y + 5, TenkaichiUi.GOLD_LIGHT, true);
-                } else {
-                    g.text(this.font, mult, cx + 27, y + 15, TenkaichiUi.GOLD_LIGHT, true);
-                }
+                TenkaichiUi.sprite(g, TenkaichiUi.ball(i + 1), cx + 6, y + 5, 16, 16, equipped ? 0xFFFFFFFF : 0xFF8A8A8A);
+                g.text(this.font, Component.translatable(form.name), cx + 27, y + 5, equipped ? color : 0xFF9AA0B8, true);
+                g.text(this.font, Component.translatable("screen.dbtenkaichi.character.multiplier", (int) form.bpMultiplier), cx + 27, y + 15, TenkaichiUi.GOLD_LIGHT, true);
                 float mastery = data.mastery(form.id);
                 int gx = cx + 27;
-                int gy = y + (unlocked || !"trial".equals(form.requirements.unlock) ? 17 : 26);
+                int gy = y + 26;
                 Component m = Component.translatable("screen.dbtenkaichi.character.mastery", Math.round(mastery * 100));
                 TenkaichiUi.gauge(g, gx, gy, cw - 40 - this.font.width(m), 6, mastery, 0.0f, 0xFFFFD84A);
                 g.text(this.font, m, cx + cw - 6 - this.font.width(m), gy - 1, TenkaichiUi.MUTED, true);
                 if (unlocked) {
-                    g.text(this.font, Component.translatable("screen.dbtenkaichi.character.unlocked"), gx, y + 30, TenkaichiUi.GOOD, true);
+                    Component status = Component.translatable(equipped ? "screen.dbtenkaichi.character.equipped" : "screen.dbtenkaichi.character.unequipped");
+                    g.text(this.font, this.font.plainSubstrByWidth(status.getString(), cw - 31), gx, gy + 9, equipped ? TenkaichiUi.GOOD : TenkaichiUi.MUTED, true);
                 } else {
                     requirements(g, data, form, gx, gy + 9);
                 }
@@ -483,7 +485,7 @@ public class CharacterScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-        if (tab <= 1 && ClientState.clientTicks % 10 == 0) {
+        if (tab <= 2 && ClientState.clientTicks % 10 == 0) {
             rebuildWidgets();
         }
     }

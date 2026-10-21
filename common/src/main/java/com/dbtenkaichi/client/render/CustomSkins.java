@@ -14,6 +14,7 @@ import java.util.Map;
 
 public final class CustomSkins {
     private static final int MAX_CACHED = 48;
+    public static final int ROSHI_OUTFIT = 9;
     private static final Map<Long, Identifier> CACHE = new LinkedHashMap<>(16, 0.75f, true);
     private static int counter;
 
@@ -193,6 +194,7 @@ public final class CustomSkins {
                 case 0 -> gi();
                 case 1 -> armor();
                 case 2 -> casual();
+                case ROSHI_OUTFIT -> roshi();
                 default -> {
                 }
             }
@@ -783,6 +785,122 @@ public final class CustomSkins {
             hd(4, 16, 4, 4, shorts, 0.8f, 0.75f, 0.05f);
             hd(20, 48, 4, 4, shorts, 0.8f, 0.75f, 0.05f);
             hd(28, 16, 8, 4, shorts, 0.7f, 0.65f, 0.05f);
+        }
+
+        private static final int[][] GLYPHS = {
+                {0b101, 0b110, 0b100, 0b110, 0b101},
+                {0b010, 0b101, 0b111, 0b101, 0b101},
+                {0b111, 0b100, 0b110, 0b100, 0b111},
+                {0b101, 0b101, 0b111, 0b101, 0b101},
+                {0b110, 0b101, 0b110, 0b101, 0b110},
+                {0b101, 0b111, 0b111, 0b111, 0b101},
+                {0b110, 0b101, 0b110, 0b101, 0b101}
+        };
+
+        private void glyph(int x, int y, int index) {
+            int[] rows = GLYPHS[index % GLYPHS.length];
+            for (int r = 0; r < 5; r++) {
+                for (int c = 0; c < 3; c++) {
+                    if ((rows[r] >> (2 - c) & 1) != 0) {
+                        px(x + c, y + r, 0x141414);
+                    }
+                }
+            }
+        }
+
+        private void triangle(int x, int y, boolean down) {
+            int purple = 0x7A4FC8;
+            for (int r = 0; r < 3; r++) {
+                int row = down ? 2 - r : r;
+                for (int c = 0; c <= row * 2; c++) {
+                    px(x - row + c, y + r, c == 0 ? shade(purple, 0.8f) : purple);
+                }
+            }
+        }
+
+        private void roshi() {
+            overlayClear();
+            int shirt = 0xF2A030;
+            int shorts = 0xF2F0EA;
+            int strap = 0x3E9E3A;
+            int sole = 0x7A4A22;
+            faceRows(16, 16, 8, 12, 4, 0, 12, shirt, 0.05f);
+            faceRows(40, 16, 4, 12, 4, 0, 5, shirt, 0.05f);
+            faceRows(32, 48, 4, 12, 4, 0, 5, shirt, 0.05f);
+            faceRows(40, 16, 4, 12, 4, 4, 5, shade(shirt, 0.82f), 0.03f);
+            faceRows(32, 48, 4, 12, 4, 4, 5, shade(shirt, 0.82f), 0.03f);
+            int fx = 20 * S;
+            int fy = 20 * S;
+            for (int dy = 0; dy < 8; dy++) {
+                int half = (8 - dy) / 2;
+                for (int dx = 8 - half; dx < 8 + half; dx++) {
+                    clear(fx + dx, fy + dy);
+                }
+                darken(fx + 7 - half, fy + dy, 0.72f);
+                darken(fx + 8 + half, fy + dy, 0.72f);
+            }
+            for (int dy = 8; dy < 24; dy++) {
+                darken(fx + 8, fy + dy, 0.8f);
+            }
+            for (int dx = 0; dx < 16; dx++) {
+                darken(fx + dx, fy + 23, 0.82f);
+                darken(fx + 16 + 8 + dx, fy + 23, 0.82f);
+            }
+            glyph(fx + 2, fy + 8, 0);
+            glyph(fx + 11, fy + 10, 1);
+            glyph(fx + 3, fy + 16, 3);
+            glyph(fx + 11, fy + 17, 4);
+            triangle(fx + 5, fy + 3, false);
+            triangle(fx + 13, fy + 2, true);
+            triangle(fx + 7, fy + 20, false);
+            triangle(fx + 2, fy + 21, true);
+            int bx = 32 * S;
+            glyph(bx + 2, fy + 3, 2);
+            glyph(bx + 7, fy + 6, 5);
+            glyph(bx + 11, fy + 3, 6);
+            glyph(bx + 4, fy + 13, 3);
+            glyph(bx + 10, fy + 15, 1);
+            triangle(bx + 8, fy + 11, true);
+            triangle(bx + 3, fy + 20, false);
+            triangle(bx + 13, fy + 21, true);
+            triangle(16 * S + 4, fy + 6, false);
+            triangle(28 * S + 4, fy + 14, true);
+            triangle(44 * S + 3, 20 * S + 2, false);
+            triangle(36 * S + 4, 52 * S + 3, true);
+            faceRows(0, 16, 4, 12, 4, 0, 6, shorts, 0.1f);
+            faceRows(16, 48, 4, 12, 4, 0, 6, shorts, 0.1f);
+            faceRows(0, 16, 4, 12, 4, 5, 6, shade(shorts, 0.86f), 0.04f);
+            faceRows(16, 48, 4, 12, 4, 5, 6, shade(shorts, 0.86f), 0.04f);
+            folds(0, 16, 4, 6, 4, shorts);
+            folds(16, 48, 4, 6, 4, shorts);
+            for (int[] leg : new int[][]{{0, 16}, {16, 48}}) {
+                int ly = (leg[1] + 4) * S;
+                for (int face = 0; face < 4; face++) {
+                    int lx = (leg[0] + face * 4) * S;
+                    for (int dx = 0; dx < 8; dx++) {
+                        px(lx + dx, ly + 23, sole);
+                    }
+                    if (face == 1) {
+                        for (int dx = 1; dx < 7; dx++) {
+                            px(lx + dx, ly + 21, strap);
+                        }
+                        px(lx + 3, ly + 20, strap);
+                        px(lx + 4, ly + 20, strap);
+                        px(lx + 3, ly + 22, shade(strap, 0.8f));
+                        px(lx + 4, ly + 22, shade(strap, 0.8f));
+                    } else if (face != 3) {
+                        for (int dx = 0; dx < 8; dx++) {
+                            if (dx < 3) {
+                                px(lx + (face == 0 ? 8 - 1 - dx : dx), ly + 22, strap);
+                            }
+                        }
+                    }
+                }
+                hd(leg[0] + 8, leg[1], 4, 4, sole, 0.9f, 0.8f, 0.05f);
+            }
+            coverTops(shirt, shorts);
+            hd(4, 32, 4, 4, shorts, 0.85f, 0.8f, 0.05f);
+            hd(4, 48, 4, 4, shorts, 0.85f, 0.8f, 0.05f);
         }
 
         private void casual() {

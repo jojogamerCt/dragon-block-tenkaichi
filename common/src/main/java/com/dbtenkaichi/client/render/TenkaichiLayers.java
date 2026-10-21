@@ -41,6 +41,7 @@ public final class TenkaichiLayers {
     public static final Identifier FEATURE_TEXTURE = Tenkaichi.id("textures/entity/feature.png");
     public static final Identifier THICK_TAIL_TEXTURE = Tenkaichi.id("textures/entity/thick_tail.png");
     public static final Identifier ARMOR_PAD_TEXTURE = Tenkaichi.id("textures/entity/armor_pad.png");
+    public static final Identifier ROSHI_GEAR_TEXTURE = Tenkaichi.id("textures/entity/roshi_gear.png");
 
     private TenkaichiLayers() {
     }
@@ -252,6 +253,12 @@ public final class TenkaichiLayers {
         Minecraft mc = Minecraft.getInstance();
         Entity entity = mc.level == null ? null : mc.level.getEntity(state.id);
         boolean fromAppearance = !(entity instanceof net.minecraft.world.entity.player.Player) || visual.previewing;
+        if (fromAppearance && visual.roshi) {
+            for (int piece = 0; piece < 3; piece++) {
+                spec[piece * 3] = CustomSkins.ROSHI_OUTFIT;
+            }
+            return spec;
+        }
         if (fromAppearance) {
             int style = visual.appearance.outfit;
             if (style >= 0 && style < com.dbtenkaichi.player.Appearance.OUTFIT_NATURAL) {
@@ -344,6 +351,8 @@ public final class TenkaichiLayers {
     static final class GearLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
         private final HairModel pads;
         private final HairModel beard;
+        private final HairModel roshiGear;
+        private final HairModel roshiBeard;
         private final HairModel cat;
         private final HairModel catNose;
 
@@ -351,6 +360,8 @@ public final class TenkaichiLayers {
             super(parent);
             this.pads = new HairModel(set.bakeLayer(TenkaichiModels.SHOULDER_PADS));
             this.beard = new HairModel(set.bakeLayer(TenkaichiModels.BEARD));
+            this.roshiGear = new HairModel(set.bakeLayer(TenkaichiModels.ROSHI_GEAR));
+            this.roshiBeard = new HairModel(set.bakeLayer(TenkaichiModels.ROSHI_BEARD));
             this.cat = new HairModel(set.bakeLayer(TenkaichiModels.CAT_FEATURES));
             this.catNose = new HairModel(set.bakeLayer(TenkaichiModels.CAT_NOSE));
         }
@@ -368,7 +379,10 @@ public final class TenkaichiLayers {
                 if (visual.appearance.outfit == 1 && !visual.appearance.useOwnSkin) {
                     collector.submitModel(pads, state, poseStack, RenderTypes.entityCutout(ARMOR_PAD_TEXTURE), light, OverlayTexture.NO_OVERLAY, 0xFFEDE7D6, null, state.outlineColor);
                 }
-                if (visual.beard) {
+                if (visual.roshi) {
+                    collector.submitModel(roshiGear, state, poseStack, RenderTypes.entityCutout(ROSHI_GEAR_TEXTURE), light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF, null, state.outlineColor);
+                    collector.submitModel(roshiBeard, state, poseStack, RenderTypes.entityCutout(HAIR_TEXTURE), light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF, null, state.outlineColor);
+                } else if (visual.beard) {
                     collector.submitModel(beard, state, poseStack, RenderTypes.entityCutout(HAIR_TEXTURE), light, OverlayTexture.NO_OVERLAY, 0xFFEDEDED, null, state.outlineColor);
                 }
                 if (visual.cat) {

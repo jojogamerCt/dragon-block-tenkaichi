@@ -15,6 +15,7 @@ public final class EntityVisual {
     public Appearance appearance = Appearance.defaultsFor(Race.HUMAN);
     public boolean created;
     public boolean beard;
+    public boolean roshi;
     public boolean cat;
     public boolean previewing;
     public String form = PlayerData.BASE_FORM;

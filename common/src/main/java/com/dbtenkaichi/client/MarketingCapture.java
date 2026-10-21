@@ -157,6 +157,27 @@ public final class MarketingCapture {
         at(t + 82, mc -> shot(mc, "korin_tower"));
         at(t + 84, mc -> tour(mc, Landmarks.KAMI_LOOKOUT, 0, 10, 48, 0, 0, -8));
         at(t + 124, mc -> shot(mc, "kami_lookout"));
+        at(t + 126, mc -> {
+            BlockPos site = Landmarks.sites().get(Landmarks.KAME_HOUSE);
+            if (site != null) {
+                command(mc, String.format(Locale.ROOT, "summon dbtenkaichi:master %d.5 %d %d.5 {NoAI:1b,Rotation:[-20f,0f],master_kind:1,Tags:[\"mkt_roshi\"]}", site.getX() + 1, site.getY(), site.getZ() + 4));
+            }
+            tour(mc, Landmarks.KAME_HOUSE, 0, 1, 7, 1, 1, 4);
+        });
+        at(t + 150, mc -> {
+            com.dbtenkaichi.entity.MasterEntity roshi = null;
+            for (com.dbtenkaichi.entity.MasterEntity master : mc.level.getEntitiesOfClass(com.dbtenkaichi.entity.MasterEntity.class, mc.player.getBoundingBox().inflate(48))) {
+                if (master.kind() == com.dbtenkaichi.entity.MasterKind.ROSHI && (roshi == null || master.distanceTo(mc.player) < roshi.distanceTo(mc.player))) {
+                    roshi = master;
+                }
+            }
+            if (roshi != null) {
+                mc.gui.setScreen(new Preview(25.0f, roshi));
+            }
+        });
+        at(t + 160, mc -> shot(mc, "roshi"));
+        at(t + 161, mc -> mc.gui.setScreen(null));
+        at(t + 162, mc -> command(mc, "kill @e[tag=mkt_roshi]"));
         at(t + 168, mc -> command(mc, "gamemode survival " + name));
         t += 180;
         t = trial(t, "dbtenkaichi:super_saiyan_2", "trial_cell");
@@ -380,17 +401,24 @@ public final class MarketingCapture {
 
     private static final class Preview extends net.minecraft.client.gui.screens.Screen {
         private final float yaw;
+        private final net.minecraft.world.entity.LivingEntity subject;
 
         Preview(float yaw) {
+            this(yaw, null);
+        }
+
+        Preview(float yaw, net.minecraft.world.entity.LivingEntity subject) {
             super(net.minecraft.network.chat.Component.empty());
             this.yaw = yaw;
+            this.subject = subject;
         }
 
         @Override
         public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
             Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                com.dbtenkaichi.client.screen.EntityPreview.draw(g, 0, 0, this.width, this.height, (int) (this.height * 0.3f), yaw, -5.0f, 1.0f, mc.player);
+            net.minecraft.world.entity.LivingEntity target = subject != null ? subject : mc.player;
+            if (target != null) {
+                com.dbtenkaichi.client.screen.EntityPreview.draw(g, 0, 0, this.width, this.height, (int) (this.height * 0.3f), yaw, -5.0f, 1.0f, target);
             }
         }
 

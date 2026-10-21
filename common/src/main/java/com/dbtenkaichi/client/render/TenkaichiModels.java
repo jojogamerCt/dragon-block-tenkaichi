@@ -27,6 +27,8 @@ public final class TenkaichiModels {
     public static final ModelLayerLocation STINGER_TAIL = new ModelLayerLocation(Tenkaichi.id("stinger_tail"), "main");
     public static final ModelLayerLocation SHOULDER_PADS = new ModelLayerLocation(Tenkaichi.id("shoulder_pads"), "main");
     public static final ModelLayerLocation BEARD = new ModelLayerLocation(Tenkaichi.id("beard"), "main");
+    public static final ModelLayerLocation ROSHI_GEAR = new ModelLayerLocation(Tenkaichi.id("roshi_gear"), "main");
+    public static final ModelLayerLocation ROSHI_BEARD = new ModelLayerLocation(Tenkaichi.id("roshi_beard"), "main");
     public static final ModelLayerLocation OUTFIT = new ModelLayerLocation(Tenkaichi.id("outfit"), "main");
     public static final ModelLayerLocation OUTFIT_FEMININE = new ModelLayerLocation(Tenkaichi.id("outfit_feminine"), "main");
     public static final ModelLayerLocation BUST = new ModelLayerLocation(Tenkaichi.id("bust"), "main");
@@ -86,6 +88,8 @@ public final class TenkaichiModels {
         registrar.accept(STINGER_TAIL, () -> thickTail(true));
         registrar.accept(SHOULDER_PADS, TenkaichiModels::shoulderPads);
         registrar.accept(BEARD, TenkaichiModels::beard);
+        registrar.accept(ROSHI_GEAR, TenkaichiModels::roshiGear);
+        registrar.accept(ROSHI_BEARD, TenkaichiModels::roshiBeard);
         registrar.accept(CAT_FEATURES, TenkaichiModels::catFeatures);
         registrar.accept(OUTFIT_FEMININE, () -> bust(net.minecraft.client.model.player.PlayerModel.createMesh(new net.minecraft.client.model.geom.builders.CubeDeformation(0.07f), false), 0.07f));
         registrar.accept(BUST, () -> bust(emptyPlayerMesh(), 0.0f));
@@ -357,6 +361,49 @@ public final class TenkaichiModels {
                 .texOffs(0, 24).addBox(-1.2f, 4.0f, -4.4f, 2.4f, 2.4f, 1.0f), PartPose.ZERO);
         head.addOrReplaceChild("brow_l", CubeListBuilder.create().texOffs(16, 0).addBox(-3.6f, -5.0f, -4.4f, 2.6f, 0.9f, 0.6f), PartPose.rotation(0.0f, 0.0f, 0.15f));
         head.addOrReplaceChild("brow_r", CubeListBuilder.create().texOffs(16, 0).addBox(1.0f, -5.0f, -4.4f, 2.6f, 0.9f, 0.6f), PartPose.rotation(0.0f, 0.0f, -0.15f));
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+
+    public static LayerDefinition roshiGear() {
+        MeshDefinition mesh = emptyPlayerMesh();
+        PartDefinition body = mesh.getRoot().getChild("body");
+        body.addOrReplaceChild("shell", CubeListBuilder.create()
+                .texOffs(0, 24).addBox(-7.0f, -1.6f, 2.3f, 14.0f, 14.6f, 0.6f)
+                .texOffs(0, 0).addBox(-6.4f, -1.1f, 2.9f, 12.8f, 13.6f, 1.6f)
+                .texOffs(0, 0).addBox(-5.2f, 0.0f, 4.5f, 10.4f, 11.4f, 1.5f)
+                .texOffs(0, 0).addBox(-3.8f, 1.4f, 6.0f, 7.6f, 8.6f, 1.2f)
+                .texOffs(0, 0).addBox(-2.2f, 3.0f, 7.2f, 4.4f, 5.4f, 0.7f), PartPose.ZERO);
+        body.addOrReplaceChild("rope", CubeListBuilder.create()
+                .texOffs(40, 0).addBox(-3.4f, -0.5f, -2.7f, 1.0f, 0.5f, 5.4f)
+                .texOffs(40, 0).addBox(2.4f, -0.5f, -2.7f, 1.0f, 0.5f, 5.4f)
+                .texOffs(40, 8).addBox(-3.4f, 0.0f, -2.75f, 1.0f, 7.0f, 0.4f)
+                .texOffs(40, 8).addBox(2.4f, 0.0f, -2.75f, 1.0f, 7.0f, 0.4f)
+                .texOffs(40, 8).addBox(-3.4f, 6.4f, -2.8f, 6.8f, 0.8f, 0.4f), PartPose.ZERO);
+        PartDefinition head = mesh.getRoot().getChild("head");
+        head.addOrReplaceChild("glasses", CubeListBuilder.create()
+                .texOffs(40, 16).addBox(-3.9f, -5.3f, -4.75f, 7.8f, 2.3f, 0.5f)
+                .texOffs(40, 24).addBox(-3.5f, -5.0f, -4.95f, 2.9f, 1.7f, 0.2f)
+                .texOffs(40, 24).addBox(0.6f, -5.0f, -4.95f, 2.9f, 1.7f, 0.2f)
+                .texOffs(40, 16).addBox(-4.3f, -4.7f, -4.6f, 0.4f, 0.5f, 4.4f)
+                .texOffs(40, 16).addBox(3.9f, -4.7f, -4.6f, 0.4f, 0.5f, 4.4f), PartPose.ZERO);
+        return LayerDefinition.create(mesh, 64, 64);
+    }
+
+    public static LayerDefinition roshiBeard() {
+        MeshDefinition mesh = emptyPlayerMesh();
+        PartDefinition head = mesh.getRoot().getChild("head");
+        head.addOrReplaceChild("moustache", CubeListBuilder.create().texOffs(0, 0).addBox(-3.8f, -3.0f, -4.85f, 7.6f, 1.1f, 0.8f)
+                .texOffs(0, 0).addBox(-4.2f, -2.2f, -4.75f, 1.4f, 2.6f, 0.7f)
+                .texOffs(0, 0).addBox(2.8f, -2.2f, -4.75f, 1.4f, 2.6f, 0.7f), PartPose.ZERO);
+        head.addOrReplaceChild("beard", CubeListBuilder.create().texOffs(0, 8).addBox(-3.6f, -2.0f, -4.9f, 7.2f, 3.6f, 1.6f)
+                .texOffs(0, 16).addBox(-2.9f, 1.6f, -4.8f, 5.8f, 2.4f, 1.5f)
+                .texOffs(0, 24).addBox(-2.0f, 4.0f, -4.6f, 4.0f, 1.8f, 1.3f)
+                .texOffs(0, 32).addBox(-1.0f, 5.8f, -4.4f, 2.0f, 1.4f, 1.0f), PartPose.ZERO);
+        head.addOrReplaceChild("brow_l", CubeListBuilder.create().texOffs(16, 0).addBox(-3.6f, -6.1f, -4.4f, 2.6f, 0.6f, 0.5f), PartPose.rotation(0.0f, 0.0f, 0.12f));
+        head.addOrReplaceChild("brow_r", CubeListBuilder.create().texOffs(16, 0).addBox(1.0f, -6.1f, -4.4f, 2.6f, 0.6f, 0.5f), PartPose.rotation(0.0f, 0.0f, -0.12f));
+        head.addOrReplaceChild("tuft_l", CubeListBuilder.create().texOffs(24, 0).addBox(-4.7f, -5.8f, -2.4f, 1.1f, 3.0f, 4.4f), PartPose.ZERO);
+        head.addOrReplaceChild("tuft_r", CubeListBuilder.create().texOffs(24, 0).addBox(3.6f, -5.8f, -2.4f, 1.1f, 3.0f, 4.4f), PartPose.ZERO);
+        head.addOrReplaceChild("tuft_back", CubeListBuilder.create().texOffs(24, 8).addBox(-3.4f, -4.8f, 3.6f, 6.8f, 2.4f, 1.1f), PartPose.ZERO);
         return LayerDefinition.create(mesh, 64, 64);
     }
 

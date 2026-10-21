@@ -36,6 +36,7 @@ public final class PlayerData {
     private String form = BASE_FORM;
     private final Map<String, Float> formMastery = new HashMap<>();
     private final Set<String> unlockedForms = new LinkedHashSet<>();
+    private final Set<String> unequippedForms = new LinkedHashSet<>();
     private final Set<String> skills = new LinkedHashSet<>();
     private final Map<String, Float> skillMastery = new HashMap<>();
     private final List<String> skillSlots = new ArrayList<>(List.of("", "", "", ""));
@@ -168,6 +169,18 @@ public final class PlayerData {
 
     public Set<String> unlockedForms() {
         return Set.copyOf(unlockedForms);
+    }
+
+    public boolean isFormEquipped(String formId) {
+        return !unequippedForms.contains(formId);
+    }
+
+    public void setFormEquipped(String formId, boolean equipped) {
+        if (equipped) {
+            unequippedForms.remove(formId);
+        } else {
+            unequippedForms.add(formId);
+        }
     }
 
     public boolean hasSkill(String skill) {
@@ -315,6 +328,7 @@ public final class PlayerData {
         tag.putString("form", form);
         tag.put("form_mastery", floatMap(formMastery));
         tag.put("forms", stringList(unlockedForms));
+        tag.put("unequipped_forms", stringList(unequippedForms));
         tag.put("skills", stringList(skills));
         tag.put("skill_mastery", floatMap(skillMastery));
         tag.put("slots", stringList(skillSlots));
@@ -359,6 +373,8 @@ public final class PlayerData {
         readFloatMap(tag.getCompoundOrEmpty("form_mastery"), formMastery);
         unlockedForms.clear();
         unlockedForms.addAll(readStringList(tag.getListOrEmpty("forms")));
+        unequippedForms.clear();
+        unequippedForms.addAll(readStringList(tag.getListOrEmpty("unequipped_forms")));
         skills.clear();
         skills.addAll(readStringList(tag.getListOrEmpty("skills")));
         skillMastery.clear();

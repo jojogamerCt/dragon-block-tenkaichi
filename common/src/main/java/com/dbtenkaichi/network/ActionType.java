@@ -23,7 +23,8 @@ public enum ActionType {
     LANDED,
     KAIOKEN,
     BUY_TECHNIQUE,
-    FORM_TRIAL;
+    FORM_TRIAL,
+    FORM_EQUIP;
 
     private static final ActionType[] VALUES = values();
 

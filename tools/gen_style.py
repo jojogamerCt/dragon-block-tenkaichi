@@ -589,7 +589,39 @@ def rock():
     particle_json("rock", variants)
 
 
+def roshi_gear():
+    img = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    base = (142, 124, 224, 255)
+    seam = (88, 72, 158, 255)
+    light = (178, 166, 244, 255)
+    for y in range(24):
+        for x in range(40):
+            row = y // 4
+            col_off = 3 if row % 2 else 0
+            if y % 4 == 0 or (x + col_off) % 6 == 0:
+                put(img, x, y, seam)
+            elif y % 4 == 1 and (x + col_off) % 6 in (1, 2):
+                put(img, x, y, light)
+            else:
+                put(img, x, y, base)
+    for y in range(24, 40):
+        for x in range(40):
+            put(img, x, y, (96, 80, 170, 255) if (x + y) % 5 else (78, 64, 146, 255))
+    for y in range(0, 16):
+        for x in range(40, 64):
+            put(img, x, y, (214, 190, 140, 255) if (x + y) % 3 else (170, 146, 100, 255))
+    for y in range(16, 24):
+        for x in range(40, 64):
+            put(img, x, y, (226, 52, 52, 255) if y % 4 else (160, 28, 30, 255))
+    for y in range(24, 32):
+        for x in range(40, 64):
+            put(img, x, y, (34, 26, 40, 255))
+        put(img, 41, y, (110, 100, 130, 255))
+    img.save(path("textures", "entity", "roshi_gear.png"))
+
+
 if __name__ == "__main__":
+    roshi_gear()
     ui_sprites()
     balls()
     tab_icons()

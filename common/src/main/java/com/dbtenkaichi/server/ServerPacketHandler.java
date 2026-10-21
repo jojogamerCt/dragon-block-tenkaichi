@@ -169,6 +169,7 @@ public final class ServerPacketHandler {
             case KAIOKEN -> com.dbtenkaichi.form.KaiokenSystem.cycle(player, data, now);
             case BUY_TECHNIQUE -> PlayerManager.buyTechnique(player, data, arg);
             case FORM_TRIAL -> PlayerManager.formTrial(player, data, arg);
+            case FORM_EQUIP -> com.dbtenkaichi.form.TransformationSystem.toggleEquipped(player, data, arg, now);
             default -> {
             }
         }
