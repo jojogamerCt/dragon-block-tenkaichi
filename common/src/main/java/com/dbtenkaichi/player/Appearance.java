@@ -9,7 +9,6 @@ public final class Appearance {
     public static final int EYEBROW_STYLES = 4;
     public static final int HAIR_STYLES = HairStyle.PLAYER_SELECTABLE;
     public static final int EXPRESSIONS = 4;
-    public static final int VOICES = 4;
     public static final int OUTFITS = 4;
     public static final int OUTFIT_NATURAL = 3;
     public static final int BODY_BUILDS = 3;
@@ -24,7 +23,6 @@ public final class Appearance {
     public int hairStyle;
     public int hairColor = 0x111111;
     public int expression;
-    public int voice;
     public int auraColor = 0xE8F4FF;
     public int outfit;
     public int outfitPrimary = 0xF07A1A;
@@ -47,7 +45,6 @@ public final class Appearance {
         eyebrowStyle = clamp(eyebrowStyle, 0, EYEBROW_STYLES - 1);
         hairStyle = clamp(hairStyle, 0, HAIR_STYLES - 1);
         expression = clamp(expression, 0, EXPRESSIONS - 1);
-        voice = clamp(voice, 0, VOICES - 1);
         outfit = clamp(outfit, 0, OUTFITS - 1);
         skinColor &= 0xFFFFFF;
         eyeColor &= 0xFFFFFF;
@@ -76,7 +73,6 @@ public final class Appearance {
         tag.putInt("hair_style", hairStyle);
         tag.putInt("hair_color", hairColor);
         tag.putInt("expression", expression);
-        tag.putInt("voice", voice);
         tag.putInt("aura", auraColor);
         tag.putInt("outfit", outfit);
         tag.putInt("outfit_primary", outfitPrimary);
@@ -98,7 +94,6 @@ public final class Appearance {
         hairStyle = tag.getIntOr("hair_style", hairStyle);
         hairColor = tag.getIntOr("hair_color", hairColor);
         expression = tag.getIntOr("expression", expression);
-        voice = tag.getIntOr("voice", voice);
         auraColor = tag.getIntOr("aura", auraColor);
         outfit = tag.getIntOr("outfit", outfit);
         outfitPrimary = tag.getIntOr("outfit_primary", outfitPrimary);

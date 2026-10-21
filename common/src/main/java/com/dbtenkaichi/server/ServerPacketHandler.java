@@ -70,7 +70,6 @@ public final class ServerPacketHandler {
         appearance.hairStyle = packet.hairStyle();
         appearance.hairColor = packet.hairColor();
         appearance.expression = packet.expression();
-        appearance.voice = packet.voice();
         appearance.auraColor = packet.auraColor();
         appearance.outfit = packet.outfit();
         appearance.outfitPrimary = packet.outfitPrimary();

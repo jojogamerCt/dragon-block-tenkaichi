@@ -117,8 +117,6 @@ public class CharacterCreatorScreen extends Screen {
                 if (hasFeatureColor(race)) {
                     y = colorRow(panelX, y, panelW, "feature_color", withValue(FEATURE_COLORS, Appearance.defaultsFor(race).featureColor), () -> appearance.featureColor, c -> appearance.featureColor = c);
                 }
-                y = cycleRow(panelX, y, panelW, "voice", () -> appearance.voice, Appearance.VOICES, i -> appearance.voice = i,
-                        i -> Component.translatable("screen.dbtenkaichi.creator.voice_value", i + 1));
                 y = cycleRow(panelX, y, panelW, "own_skin", () -> appearance.useOwnSkin ? 1 : 0, 2, i -> appearance.useOwnSkin = i == 1,
                         i -> Component.translatable(i == 1 ? "options.on" : "options.off"));
             }
@@ -256,7 +254,7 @@ public class CharacterCreatorScreen extends Screen {
     private void confirm() {
         appearance.sanitize(race, minHeight, maxHeight);
         Services.NETWORK.sendToServer(new Packets.CreateCharacter(race.ordinal(), appearance.presentation, appearance.height, appearance.build, appearance.skinColor,
-                appearance.eyeStyle, appearance.eyeColor, appearance.eyebrowStyle, appearance.hairStyle, appearance.hairColor, appearance.expression, appearance.voice,
+                appearance.eyeStyle, appearance.eyeColor, appearance.eyebrowStyle, appearance.hairStyle, appearance.hairColor, appearance.expression,
                 appearance.auraColor, appearance.outfit, appearance.outfitPrimary, appearance.outfitSecondary, appearance.featureColor, appearance.tail, appearance.useOwnSkin));
         onClose();
     }

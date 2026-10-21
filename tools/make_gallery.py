@@ -252,7 +252,7 @@ def creator():
     img = ImageEnhance.Brightness(img).enhance(0.9)
     img = bands(img, 250, 120)
     img = gradient_text(img, "CREATE YOUR FIGHTER", 140, W // 2, 24)
-    img = plain_text(img, "Race, build, face, hair, outfit, aura color and voice", 42, W // 2, 190)
+    img = plain_text(img, "Race, build, face, hair, outfit and aura color", 42, W // 2, 190)
     finish(brand(img), "08_character_creator")
 
 

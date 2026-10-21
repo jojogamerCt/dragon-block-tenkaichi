@@ -295,7 +295,7 @@ def build():
     add("screen.dbtenkaichi.creator.tab.ki", "Ki & outfit", "Ki e abiti")
     rows = {
         "race": ("Race", "Razza"), "presentation": ("Look", "Aspetto"), "build": ("Build", "Corporatura"), "skin": ("Skin", "Pelle"),
-        "voice": ("Voice", "Voce"), "own_skin": ("Use own skin", "Usa la tua skin"), "eyes": ("Eyes", "Occhi"), "eye_color": ("Eye color", "Colore occhi"),
+        "own_skin": ("Use own skin", "Usa la tua skin"), "eyes": ("Eyes", "Occhi"), "eye_color": ("Eye color", "Colore occhi"),
         "brows": ("Eyebrows", "Sopracciglia"), "expression": ("Expression", "Espressione"), "hair": ("Hair", "Capelli"), "hair_color": ("Hair color", "Colore capelli"),
         "tail": ("Tail", "Coda"), "aura": ("Aura", "Aura"), "outfit": ("Outfit", "Abito"), "outfit_primary": ("Main color", "Colore principale"),
         "outfit_secondary": ("Accent color", "Colore accento"),
@@ -312,7 +312,6 @@ def build():
     for n, (e, i) in enumerate([("Martial arts gi", "Gi da arti marziali"), ("Battle armor", "Armatura da battaglia"), ("Casual", "Casual"), ("Natural", "Naturale")]):
         add("screen.dbtenkaichi.creator.outfit.%d" % n, e, i)
     add("screen.dbtenkaichi.creator.style", "Style %s", "Stile %s")
-    add("screen.dbtenkaichi.creator.voice_value", "Voice %s", "Voce %s")
     add("screen.dbtenkaichi.creator.height", "Height: %s cm", "Altezza: %s cm")
     add("screen.dbtenkaichi.creator.random", "Randomize", "Casuale")
     add("screen.dbtenkaichi.creator.confirm", "Begin the journey", "Inizia il viaggio")

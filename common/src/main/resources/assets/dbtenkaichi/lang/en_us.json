@@ -276,8 +276,6 @@
   "screen.dbtenkaichi.creator.tab.face": "Face & hair",
   "screen.dbtenkaichi.creator.tab.ki": "Ki & outfit",
   "screen.dbtenkaichi.creator.tail": "Tail",
-  "screen.dbtenkaichi.creator.voice": "Voice",
-  "screen.dbtenkaichi.creator.voice_value": "Voice %s",
   "screen.dbtenkaichi.settings.bp": "Show Battle Power: %s",
   "screen.dbtenkaichi.settings.cinematics": "Transformation cinematics: %s",
   "screen.dbtenkaichi.settings.hitstop": "Hit stop: %s",
