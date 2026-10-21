@@ -73,6 +73,46 @@ public final class ClientSmokeTest {
         LOG.add(String.format(Locale.ROOT, "%s: form=%s ssj equipped=%s ssj2 equipped=%s", label, data.form(), data.isFormEquipped(SSJ), data.isFormEquipped(SSJ2)));
     }
 
+    private static com.dbtenkaichi.entity.MasterEntity master;
+    private static Vec3 spot;
+
+    private static String fmt(Vec3 v) {
+        return v == null ? "none" : String.format(Locale.ROOT, "%.2f %.2f %.2f", v.x, v.y, v.z);
+    }
+
+    private static com.dbtenkaichi.entity.MasterEntity nearestMaster(Minecraft mc) {
+        com.dbtenkaichi.entity.MasterEntity best = null;
+        for (com.dbtenkaichi.entity.MasterEntity m : mc.level.getEntitiesOfClass(com.dbtenkaichi.entity.MasterEntity.class, mc.player.getBoundingBox().inflate(32))) {
+            if (best == null || m.distanceTo(mc.player) < best.distanceTo(mc.player)) {
+                best = m;
+            }
+        }
+        return best;
+    }
+
+    private static void session(Minecraft mc, String name, boolean sparring, boolean start) {
+        IntegratedServer server = mc.getSingleplayerServer();
+        if (server == null) {
+            return;
+        }
+        server.execute(() -> {
+            net.minecraft.server.level.ServerPlayer sp = server.getPlayerList().getPlayerByName(name);
+            if (sp == null) {
+                return;
+            }
+            for (com.dbtenkaichi.entity.MasterEntity m : sp.level().getEntitiesOfClass(com.dbtenkaichi.entity.MasterEntity.class, sp.getBoundingBox().inflate(32), e -> e.entityTags().contains("dbt_test"))) {
+                if (!start) {
+                    m.stopSession(sp);
+                } else if (sparring) {
+                    m.startSparring(sp);
+                } else {
+                    m.startDrill(sp);
+                }
+                LOG.add((start ? "started " : "stopped ") + (sparring ? "sparring" : "drill") + " with master at " + fmt(m.position()));
+            }
+        });
+    }
+
     private static void step(Minecraft mc) {
         String name = mc.player.getName().getString();
         PlayerData data = Services.PLATFORM.playerData(mc.player);
@@ -84,48 +124,38 @@ public final class ClientSmokeTest {
                         a.eyebrowStyle, a.hairStyle, a.hairColor, a.expression, a.auraColor, a.outfit, a.outfitPrimary, a.outfitSecondary, a.featureColor, true, false));
                 mc.gui.setScreen(null);
             }
-            case 60 -> {
-                command(mc, "tenkaichi setstat " + name + " all 60");
-                command(mc, "tenkaichi unlockform " + name + " dbtenkaichi:super_saiyan");
+            case 100 -> {
+                command(mc, "tenkaichi setstat " + name + " all 40");
                 command(mc, "tenkaichi restore " + name);
-                mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+                Vec3 look = mc.player.getLookAngle().multiply(1, 0, 1).normalize();
+                Vec3 at = mc.player.position().add(look.scale(3));
+                command(mc, String.format(Locale.ROOT, "summon dbtenkaichi:master %.2f %.2f %.2f {Tags:[\"dbt_test\"]}", at.x, mc.player.getY(), at.z));
             }
-            case 70 -> shot(mc, "01_first_person_before");
-            case 72 -> action(ActionType.TRANSFORM_UP, com.dbtenkaichi.form.TransformationSystem.CINEMATIC_AUTO);
-            case 90 -> {
-                float before = mc.player.getYRot();
-                boolean turned = false;
-                try {
-                    var dx = net.minecraft.client.MouseHandler.class.getDeclaredField("accumulatedDX");
-                    dx.setAccessible(true);
-                    dx.setDouble(mc.mouseHandler, 400.0);
-                    var turn = net.minecraft.client.MouseHandler.class.getDeclaredMethod("turnPlayer", double.class);
-                    turn.setAccessible(true);
-                    turn.invoke(mc.mouseHandler, 0.05);
-                    turned = true;
-                } catch (ReflectiveOperationException e) {
-                    LOG.add("reflection failed: " + e);
-                }
-                LOG.add("cinematic active: " + com.dbtenkaichi.client.cinematic.CinematicDirector.localActive() + " mouse turn attempted: " + turned + " yaw before " + before + " after " + mc.player.getYRot());
+            case 140 -> {
+                master = nearestMaster(mc);
+                spot = master == null ? null : master.position();
+                LOG.add("master spot " + fmt(spot));
+                session(mc, name, true, true);
             }
-            case 96 -> shot(mc, "02_cutscene_first_person");
-            case 130 -> shot(mc, "03_cutscene_later");
-            case 400 -> {
-                float before = mc.player.getYRot();
-                try {
-                    var dx = net.minecraft.client.MouseHandler.class.getDeclaredField("accumulatedDX");
-                    dx.setAccessible(true);
-                    dx.setDouble(mc.mouseHandler, 400.0);
-                    var turn = net.minecraft.client.MouseHandler.class.getDeclaredMethod("turnPlayer", double.class);
-                    turn.setAccessible(true);
-                    turn.invoke(mc.mouseHandler, 0.05);
-                } catch (ReflectiveOperationException e) {
-                    LOG.add("reflection failed: " + e);
-                }
-                LOG.add("after cutscene active: " + com.dbtenkaichi.client.cinematic.CinematicDirector.localActive() + " form " + data.form() + " yaw before " + before + " after " + mc.player.getYRot());
-                shot(mc, "04_after_cutscene_hand");
+            case 160 -> command(mc, "execute as @e[tag=dbt_test] at @s run tp @s ~9 ~ ~6");
+            case 170 -> LOG.add("master moved during sparring: " + fmt(nearestMaster(mc) == null ? null : nearestMaster(mc).position()));
+            case 172 -> session(mc, name, true, false);
+            case 190 -> {
+                com.dbtenkaichi.entity.MasterEntity m = nearestMaster(mc);
+                LOG.add("after sparring: " + fmt(m == null ? null : m.position()) + " distance from spot " + (m == null || spot == null ? -1 : String.format(Locale.ROOT, "%.2f", m.position().distanceTo(spot))));
+                mc.gui.setScreen(null);
             }
-            case 410 -> {
+            case 240 -> session(mc, name, false, true);
+            case 260 -> command(mc, "execute as @e[tag=dbt_test] at @s run tp @s ~-7 ~3 ~5");
+            case 270 -> session(mc, name, false, false);
+            case 290 -> {
+                com.dbtenkaichi.entity.MasterEntity m = nearestMaster(mc);
+                LOG.add("after dodge drill: " + fmt(m == null ? null : m.position()) + " distance from spot " + (m == null || spot == null ? -1 : String.format(Locale.ROOT, "%.2f", m.position().distanceTo(spot))));
+                mc.gui.setScreen(null);
+                mc.options.setCameraType(net.minecraft.client.CameraType.THIRD_PERSON_BACK);
+                shot(mc, "01_master_back_home");
+            }
+            case 300 -> {
                 finished = true;
                 Tenkaichi.LOG.info("[DBT-CLIENT] RESULT {}", LOG);
                 mc.stop();

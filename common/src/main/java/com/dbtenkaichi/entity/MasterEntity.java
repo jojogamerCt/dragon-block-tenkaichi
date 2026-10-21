@@ -44,6 +44,8 @@ public class MasterEntity extends FighterNpc {
     private static final EntityDataAccessor<Integer> KIND = SynchedEntityData.defineId(MasterEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> MIRROR = SynchedEntityData.defineId(MasterEntity.class, EntityDataSerializers.INT);
     private @Nullable BlockPos home;
+    private net.minecraft.world.phys.@Nullable Vec3 sessionSpot;
+    private float sessionYaw;
     private @Nullable String landmark;
     private int landmarkGeneration;
     private boolean trial;
@@ -157,6 +159,13 @@ public class MasterEntity extends FighterNpc {
     protected void addAdditionalSaveData(ValueOutput output) {
         super.addAdditionalSaveData(output);
         output.putInt("master_kind", kind().ordinal());
+        if (sessionSpot != null) {
+            output.putBoolean("session_active", true);
+            output.putDouble("session_x", sessionSpot.x);
+            output.putDouble("session_y", sessionSpot.y);
+            output.putDouble("session_z", sessionSpot.z);
+            output.putFloat("session_yaw", sessionYaw);
+        }
         if (home != null) {
             output.putIntArray("master_home", new int[]{home.getX(), home.getY(), home.getZ()});
         }
@@ -174,6 +183,9 @@ public class MasterEntity extends FighterNpc {
         if (kind != MasterKind.MASTER && getCustomName() == null) {
             setCustomName(Component.translatable(kind.translationKey()));
         }
+        sessionSpot = input.getBooleanOr("session_active", false)
+                ? new net.minecraft.world.phys.Vec3(input.getDoubleOr("session_x", 0.0), input.getDoubleOr("session_y", 0.0), input.getDoubleOr("session_z", 0.0)) : null;
+        sessionYaw = input.getFloatOr("session_yaw", 0.0f);
         home = input.getIntArray("master_home").filter(a -> a.length == 3).map(a -> new BlockPos(a[0], a[1], a[2])).orElse(null);
         landmark = input.getString("master_landmark").orElse(null);
         landmarkGeneration = input.getIntOr("master_landmark_generation", 0);
@@ -219,7 +231,38 @@ public class MasterEntity extends FighterNpc {
         return InteractionResult.SUCCESS;
     }
 
+    private void rememberSpot() {
+        if (sessionSpot == null && !trial) {
+            sessionSpot = home != null ? net.minecraft.world.phys.Vec3.atBottomCenterOf(home) : position();
+            sessionYaw = getYRot();
+        }
+    }
+
+    public void returnToSpot() {
+        net.minecraft.world.phys.Vec3 spot = sessionSpot;
+        sessionSpot = null;
+        if (spot == null || trial || !(level() instanceof ServerLevel level)) {
+            return;
+        }
+        getNavigation().stop();
+        setTarget(null);
+        setFighterFlying(false);
+        runtime.guarding = false;
+        if (spot.distanceToSqr(position()) > 0.25) {
+            com.dbtenkaichi.combat.CombatSystem.fx(this, com.dbtenkaichi.combat.CombatFxKind.VANISH, this, this, position().add(0, getBbHeight() * 0.5, 0), 1.0f);
+            teleportTo(spot.x, spot.y, spot.z);
+            com.dbtenkaichi.combat.CombatSystem.fx(this, com.dbtenkaichi.combat.CombatFxKind.VANISH, this, this, spot.add(0, getBbHeight() * 0.5, 0), 1.0f);
+            com.dbtenkaichi.combat.CombatSystem.playSound(level, this, com.dbtenkaichi.registry.ModSounds.VANISH.get(), 0.8f, 1.0f);
+        }
+        setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+        resetFallDistance();
+        setYRot(sessionYaw);
+        setYHeadRot(sessionYaw);
+        setYBodyRot(sessionYaw);
+    }
+
     public void startSparring(ServerPlayer player) {
+        rememberSpot();
         sparringPartner = player.getId();
         comboHits = 0;
         setTarget(player);
@@ -227,6 +270,7 @@ public class MasterEntity extends FighterNpc {
     }
 
     public void startDrill(ServerPlayer player) {
+        rememberSpot();
         drillPartner = player.getId();
         nextDrillShot = level().getGameTime() + 40;
         player.sendSystemMessage(Component.translatable("message.dbtenkaichi.drill_start"));
@@ -242,6 +286,9 @@ public class MasterEntity extends FighterNpc {
         }
         runtime.guarding = false;
         setFighterFlying(false);
+        if (sparringPartner < 0 && drillPartner < 0) {
+            returnToSpot();
+        }
     }
 
     private @Nullable ServerPlayer partner(int id) {
@@ -262,12 +309,18 @@ public class MasterEntity extends FighterNpc {
             return;
         }
         ServerPlayer sparring = partner(sparringPartner);
+        boolean ended = false;
         if (sparringPartner >= 0 && sparring == null) {
             sparringPartner = -1;
+            ended = true;
         }
         ServerPlayer drill = partner(drillPartner);
         if (drillPartner >= 0 && drill == null) {
             drillPartner = -1;
+            ended = true;
+        }
+        if ((ended || sessionSpot != null) && sparringPartner < 0 && drillPartner < 0) {
+            returnToSpot();
         }
         if (sparring != null) {
             sparTick(level, sparring, now);
