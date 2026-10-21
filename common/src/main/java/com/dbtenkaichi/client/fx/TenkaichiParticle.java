@@ -13,11 +13,11 @@ import net.minecraft.util.RandomSource;
 public class TenkaichiParticle extends SingleQuadParticle {
     public enum Style {
         KI_SPARK(0.07f, 0.13f, 8, 16, 0.0f, 0.86f, 0.0f, 1.0f, true, true),
-        AURA_FLAME(0.22f, 0.38f, 12, 20, -0.004f, 0.9f, 1.5f, 0.9f, true, true),
+        AURA_FLAME(0.18f, 0.3f, 12, 20, -0.004f, 0.9f, 0.5f, 0.6f, true, true),
         ENERGY_ORB(0.12f, 0.24f, 16, 28, 0.0f, 0.92f, 1.2f, 0.85f, true, true),
         IMPACT_STAR(0.7f, 1.0f, 5, 7, 0.0f, 0.5f, 1.8f, 1.0f, true, false),
         SHOCK_RING(0.4f, 0.6f, 9, 12, 0.0f, 0.5f, 6.0f, 0.9f, true, false),
-        DUST_PUFF(0.35f, 0.6f, 20, 34, -0.002f, 0.9f, 2.2f, 0.7f, false, true),
+        DUST_PUFF(0.2f, 0.34f, 18, 30, -0.002f, 0.9f, 1.6f, 0.75f, false, true),
         LIGHTNING(0.35f, 0.6f, 5, 9, 0.0f, 0.5f, 1.0f, 1.0f, true, false),
         SPEED_LINE(0.25f, 0.4f, 5, 8, 0.0f, 0.95f, 0.6f, 0.8f, true, false),
         ROCK(0.09f, 0.16f, 50, 80, -0.12f, 0.97f, 0.0f, 1.0f, false, false);
@@ -69,9 +69,9 @@ public class TenkaichiParticle extends SingleQuadParticle {
         this.gCol = options.getGreen();
         this.bCol = options.getBlue();
         this.alpha = style.startAlpha;
-        this.roll = random.nextFloat() * Mth.TWO_PI;
+        this.roll = 0.0f;
         this.oRoll = roll;
-        this.spin = style == Style.SHOCK_RING || style == Style.SPEED_LINE ? 0.0f : (random.nextFloat() - 0.5f) * (style == Style.ROCK ? 0.12f : 0.3f);
+        this.spin = 0.0f;
         if (style == Style.SPEED_LINE) {
             this.roll = (float) Math.atan2(dy, Math.sqrt(dx * dx + dz * dz)) + Mth.HALF_PI;
             this.oRoll = roll;

@@ -120,6 +120,7 @@ public final class DestructionManager {
         damageArea(level, center, Math.min(r * 1.25, 20.0), source, baseDamage, chargeRatio, balance);
         sendNear(level, center, 128 + r * 4, new Packets.CombatFx(CombatFxKind.EXPLOSION.ordinal(), source == null ? -1 : source.getId(), -1, center.x, center.y, center.z, (float) r));
         level.playSound(null, center.x, center.y, center.z, ModSounds.EXPLOSION.get(), SoundSource.PLAYERS, (float) Math.min(6.0, 1.0 + r * 0.5), (crater ? 0.6f : 0.8f) + level.getRandom().nextFloat() * 0.2f);
+        level.playSound(null, center.x, center.y, center.z, net.minecraft.sounds.SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, (float) Math.min(3.0, 0.5 + r * 0.2), 0.65f + level.getRandom().nextFloat() * 0.15f);
         TenkaichiConfig.DestructionMode mode = cfg.destruction();
         if (mode == TenkaichiConfig.DestructionMode.OFF || mode == TenkaichiConfig.DestructionMode.VISUAL || com.dbtenkaichi.training.TrialManager.isRealm(level)) {
             return;

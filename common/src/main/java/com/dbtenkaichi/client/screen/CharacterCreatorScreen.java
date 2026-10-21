@@ -275,16 +275,31 @@ public class CharacterCreatorScreen extends Screen {
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        super.extractRenderState(g, mouseX, mouseY, partial);
         Minecraft mc = Minecraft.getInstance();
         int previewW = this.width / 2;
-        TenkaichiUi.panel(g, 8, 8, previewW - 12, this.height - 40);
-        TenkaichiUi.header(g, this.font, this.title, previewW / 2, 16);
-        g.textWithWordWrap(this.font, Component.translatable("race.dbtenkaichi." + race.id() + ".desc"), 16, this.height - 60, previewW - 32, 0xFFBBBBBB);
+        int panelX = this.width / 2 + 10;
+        int panelW = Math.min(220, this.width / 2 - 20);
+        float time = ClientState.clientTicks + partial;
+        Component desc = Component.translatable("race.dbtenkaichi." + race.id() + ".desc");
+        int lines = this.font.split(desc, previewW - 32).size();
+        int cardBottom = this.height - 33;
+        int cardTop = cardBottom - lines * 9 - 7;
+        int top = 34;
+        int bottom = cardTop - 18;
+        int centerY = (top + bottom) / 2;
+        int feet = centerY + Math.round(0.9f * appearance.height * zoom);
+        TenkaichiUi.glow(g, previewW / 2, centerY, Math.round(zoom * 0.9f), 0xFF000000 | appearance.auraColor, time);
+        TenkaichiUi.pedestal(g, previewW / 2, feet + 2, Math.round(zoom * 1.15f), 0xFF000000 | appearance.auraColor, time);
         if (mc.player != null) {
-            EntityPreview.draw(g, 12, 32, previewW - 8, this.height - 52, zoom, yaw, pitch, appearance.height, mc.player);
+            EntityPreview.draw(g, 12, top, previewW - 8, bottom, zoom, yaw, pitch, appearance.height, mc.player);
         }
-        g.centeredText(this.font, Component.translatable(race.translationKey()), previewW / 2, 28, 0xFFFFFFFF);
+        TenkaichiUi.header(g, this.font, this.title, previewW / 2, 12, previewW - 16, 2.0f);
+        TenkaichiUi.logo(g, this.font, Component.translatable(race.translationKey()), previewW / 2, cardTop - 15, 1.5f, true);
+        TenkaichiUi.card(g, 10, cardTop, previewW - 20, cardBottom - cardTop);
+        g.textWithWordWrap(this.font, desc, 16, cardTop + 4, previewW - 32, TenkaichiUi.MUTED);
+        TenkaichiUi.panel(g, panelX - 7, 5, panelW + 14, this.height - 10);
+        TenkaichiUi.divider(g, panelX, 31, panelW);
+        super.extractRenderState(g, mouseX, mouseY, partial);
     }
 
     @Override

@@ -46,6 +46,10 @@ public final class ModSounds {
     public static final Supplier<SoundEvent> TRANSFORM_RUMBLE = register("transform.rumble");
     public static final Supplier<SoundEvent> UI_CLICK = register("ui.click");
     public static final Supplier<SoundEvent> UI_CONFIRM = register("ui.confirm");
+    public static final Supplier<SoundEvent> UI_OPEN = register("ui.open");
+    public static final Supplier<SoundEvent> UI_TAB = register("ui.tab");
+    public static final Supplier<SoundEvent> UI_UPGRADE = register("ui.upgrade");
+    public static final Supplier<SoundEvent> UI_DENY = register("ui.deny");
     public static final Supplier<SoundEvent> TRAINING_BEAT = register("training.beat");
     public static final Supplier<SoundEvent> TRAINING_SUCCESS = register("training.success");
     public static final Supplier<SoundEvent> VOICE_GRUNT = register("voice.grunt");

@@ -1,10 +1,13 @@
 package com.dbtenkaichi.client.ui;
 
+import com.dbtenkaichi.registry.ModSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -24,11 +27,11 @@ public class TenkaichiButton extends Button {
 
     @Override
     protected void extractContents(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-        boolean hot = selected || active && isHoveredOrFocused();
-        Identifier sprite = display ? TenkaichiUi.SLOT : hot ? TenkaichiUi.BUTTON_HOVER : !active ? TenkaichiUi.BUTTON_DISABLED : TenkaichiUi.BUTTON;
+        boolean hot = active && isHoveredOrFocused();
+        Identifier sprite = display ? TenkaichiUi.SLOT : selected ? TenkaichiUi.BUTTON_SELECTED : hot ? TenkaichiUi.BUTTON_HOVER : !active ? TenkaichiUi.BUTTON_DISABLED : TenkaichiUi.BUTTON;
         TenkaichiUi.sprite(g, sprite, getX(), getY(), getWidth(), getHeight());
         Font font = Minecraft.getInstance().font;
-        int color = display ? TenkaichiUi.TEXT : hot ? TenkaichiUi.GOLD_LIGHT : !active ? 0xFF8A8A96 : TenkaichiUi.TEXT;
+        int color = display ? TenkaichiUi.TEXT : selected ? 0xFFFFFFFF : hot ? 0xFFFFFFFF : !active ? 0xFFC4C8D8 : 0xFFFFFFFF;
         FormattedText text = getMessage();
         int available = getWidth() - 8;
         int width = font.width(text);
@@ -37,10 +40,16 @@ public class TenkaichiButton extends Button {
             text = font.substrByWidth(text, (int) (available / scale));
         }
         g.pose().pushMatrix();
-        g.pose().translate(getX() + getWidth() / 2.0f, getY() + getHeight() / 2.0f - 4.0f * scale);
+        g.pose().translate(getX() + getWidth() / 2.0f, getY() + getHeight() / 2.0f - (display || !active ? 4.0f : 5.0f) * scale);
         g.pose().scale(scale, scale);
         g.centeredText(font, Language.getInstance().getVisualOrder(text), 0, 0, color);
         g.pose().popMatrix();
+    }
+
+    @Override
+    public void playDownSound(SoundManager soundManager) {
+        soundManager.play(SimpleSoundInstance.forUI(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(), 1.25f, 0.35f));
+        soundManager.play(SimpleSoundInstance.forUI(ModSounds.UI_CLICK.get(), 1.0f, 0.7f));
     }
 
     public static final class Builder {

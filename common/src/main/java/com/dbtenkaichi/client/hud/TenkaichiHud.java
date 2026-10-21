@@ -32,7 +32,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 public final class TenkaichiHud {
-    private static final int PANEL_W = 176;
+    private static final int PANEL_W = 188;
     private static final int PANEL_H = 82;
     private static float shownHealth = -1.0f;
     private static float trailHealth = -1.0f;
@@ -104,7 +104,7 @@ public final class TenkaichiHud {
         int accent = form == null ? TenkaichiUi.GOLD : 0xFF000000 | visual.auraColor();
 
         TenkaichiUi.panel(g, x + 20, y + 4, PANEL_W - 20, PANEL_H - 6);
-        g.fill(x + 44, y + 5, x + PANEL_W - 2, y + 17, 0x50000000);
+        g.fillGradient(x + 44, y + 7, x + PANEL_W - 3, y + 17, 0x70000000, 0x20000000);
         portrait(g, mc, player, visual, x, y, accent);
 
         int tx = x + 48;
@@ -122,9 +122,10 @@ public final class TenkaichiHud {
         }
 
         int gx = x + 46;
-        int gw = PANEL_W - 54;
+        int gw = PANEL_W - 66;
         int hy = y + 30;
         TenkaichiUi.gauge(g, gx, hy, gw, 8, shownHealth / maxHealth, trailHealth / maxHealth, 0xFFE8343F);
+        TenkaichiUi.sprite(g, TenkaichiUi.HEART, gx + gw + 3, hy - 1, 9, 9);
         smallText(g, font, String.format(Locale.ROOT, "%d/%d", (int) Math.ceil(player.getHealth()), (int) maxHealth), gx + 6, hy);
         int kiColor = 0xFF000000 | (form != null ? visual.auraColor() : visual.appearance.auraColor);
         if ((kiColor & 0xFF) > 0xD0 && (kiColor >> 8 & 0xFF) > 0xD0 && (kiColor >> 16 & 0xFF) > 0xD0) {
@@ -132,12 +133,16 @@ public final class TenkaichiHud {
         }
         int ky = hy + 11;
         TenkaichiUi.gauge(g, gx - 4, ky, gw, 8, shownKi / Math.max(1.0f, ClientState.maxKi), 0.0f, kiColor);
+        TenkaichiUi.sprite(g, TenkaichiUi.icon("ki"), gx + gw - 1, ky - 1, 9, 9);
         smallText(g, font, Component.translatable("hud.dbtenkaichi.ki", (int) ClientState.ki, (int) ClientState.maxKi).getString(), gx + 2, ky);
-        int sy = ky + 11;
-        TenkaichiUi.gauge(g, gx - 8, sy, (int) (gw * 0.62f), 4, shownStamina / Math.max(1.0f, ClientState.maxStamina), 0.0f, 0xFFB9F25A);
+        int sy = ky + 12;
+        int sw = (int) (gw * 0.56f);
+        TenkaichiUi.sprite(g, TenkaichiUi.icon("stamina"), gx - 9, sy - 3, 9, 9);
+        TenkaichiUi.gauge(g, gx + 1, sy, sw, 4, shownStamina / Math.max(1.0f, ClientState.maxStamina), 0.0f, 0xFFB9F25A);
         int food = player.getFoodData().getFoodLevel();
-        int fx = gx - 8 + (int) (gw * 0.62f) + 4;
-        TenkaichiUi.gauge(g, fx, sy, gx + gw - 8 - fx, 4, food / 20.0f, 0.0f, 0xFFE8A040);
+        int fx = gx + sw + 14;
+        TenkaichiUi.sprite(g, TenkaichiUi.FOOD, fx - 10, sy - 3, 9, 9);
+        TenkaichiUi.gauge(g, fx, sy, gx + gw - 4 - fx, 4, food / 20.0f, 0.0f, 0xFFE8A040);
 
         int infoY = y + PANEL_H - 15;
         int right = x + PANEL_W - 4;
@@ -147,9 +152,10 @@ public final class TenkaichiHud {
         cursor += font.width(tp) + 8;
         int armor = player.getArmorValue();
         if (armor > 0) {
-            String shield = "⛨ " + armor;
-            g.text(font, shield, cursor, infoY, 0xFFBFD4E8, true);
-            cursor += font.width(shield) + 8;
+            TenkaichiUi.sprite(g, TenkaichiUi.ARMOR, cursor, infoY - 1, 9, 9);
+            String shield = String.valueOf(armor);
+            g.text(font, shield, cursor + 11, infoY, 0xFFBFD4E8, true);
+            cursor += font.width(shield) + 19;
         }
         if (form != null) {
             Component mastery = Component.translatable("hud.dbtenkaichi.mastery");
@@ -168,7 +174,7 @@ public final class TenkaichiHud {
         }
     }
 
-    static String compact(long value) {
+    public static String compact(long value) {
         long abs = Math.abs(value);
         if (abs < 100_000L) {
             return NumberFormat.getIntegerInstance(Locale.ROOT).format(value);
@@ -242,8 +248,8 @@ public final class TenkaichiHud {
                 key = key.substring(0, 3);
             }
             int kw = font.width(key);
-            g.fill(sx + size - kw - 3, y - 4, sx + size + 1, y + 5, 0xD0101420);
-            g.text(font, key, sx + size - kw - 1, y - 3, TenkaichiUi.GOLD_LIGHT, false);
+            TenkaichiUi.sprite(g, TenkaichiUi.CHIP, sx + size - kw - 5, y - 6, kw + 7, 11);
+            g.text(font, key, sx + size - kw - 2, y - 4, TenkaichiUi.GOLD_LIGHT, false);
         }
     }
 
@@ -277,8 +283,8 @@ public final class TenkaichiHud {
         TenkaichiUi.gauge(g, cx - 22, cy + r + 4, 44, 4, hp, 0.0f, 0xFFE8343F);
         Component name = target.getDisplayName();
         int w = mc.font.width(name);
-        g.fill(cx - w / 2 - 3, cy + r + 10, cx + w / 2 + 3, cy + r + 20, 0xB0101420);
-        g.centeredText(mc.font, name, cx, cy + r + 11, TenkaichiUi.TEXT);
+        TenkaichiUi.sprite(g, TenkaichiUi.CHIP, cx - w / 2 - 5, cy + r + 9, w + 10, 13);
+        g.centeredText(mc.font, name, cx, cy + r + 12, TenkaichiUi.TEXT);
     }
 
     public static float[] project(Minecraft mc, GuiGraphicsExtractor g, Vec3 world) {
@@ -332,10 +338,10 @@ public final class TenkaichiHud {
     }
 
     private static void pill(GuiGraphicsExtractor g, Font font, Component text, int cx, int y, int color) {
-        int w = font.width(text) + 12;
-        g.fill(cx - w / 2, y - 2, cx + w / 2, y + 9, 0xA0101420);
-        g.fill(cx - w / 2, y - 2, cx - w / 2 + 2, y + 9, color);
-        g.fill(cx + w / 2 - 2, y - 2, cx + w / 2, y + 9, color);
+        int w = font.width(text) + 16;
+        TenkaichiUi.sprite(g, TenkaichiUi.CHIP, cx - w / 2, y - 3, w, 13);
+        g.fill(cx - w / 2 + 2, y - 1, cx - w / 2 + 4, y + 8, color);
+        g.fill(cx + w / 2 - 4, y - 1, cx + w / 2 - 2, y + 8, color);
         g.centeredText(font, text, cx, y, color);
     }
 

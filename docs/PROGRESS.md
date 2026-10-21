@@ -155,3 +155,11 @@ Nessuna verifica automatica fallisce allo stato attuale.
 - Outfit come capi indossabili (9 oggetti tingibili) con livello di rendering dedicato; capelli di Goku rifatti sul riferimento; SSJ di Goku con punte verticali e SSJ2 con punte rigide; sfondo del creatore senza bande (`stretch_inner`).
 - Sblocco delle trasformazioni con Potenziale e prova contro se stessi, nuove arene tematiche (Kame Island, terra sacra di Karin, Namecc, ring del Cell Game, canyon), arene separate per tipo e contenimento nel ring.
 - BP base bilanciati per le trasformazioni, presentazione femminile (busto, corporatura, ciglia, labbra, acconciature), pulsanti Prova e requisiti nel menu delle forme.
+
+### Aggiornamento — 0.3.0 (21 ottobre 2026)
+- Nuova direzione artistica "Dragon Ball x vanilla": sprite pixel art con contorno e smusso (tools/gen_style.py), sfondo con cielo, stelle, Sfera del Drago a 4 stelle e nuvole a blocchi, titoli in stile logo, HUD con icone vanilla di cuore, fame e armatura.
+- Menu personaggio (U) a schermo intero in stile Genshin: schede a sinistra, personaggio su piedistallo al centro, pannello scorrevole a destra.
+- Particelle pixel art non ruotate, nucleo a cubo nelle sfere Ki e a prisma nei raggi.
+- Suoni rigenerati (tools/gen_sounds.py) con finitura asciutta e retrò, quattro nuovi suoni da scouter per i menu, suoni vanilla sovrapposti lato server.
+- Test: smoke test del server PASS su Fabric e NeoForge; test client PASS su entrambi i loader (il primo avvio NeoForge si è chiuso con il solito crash nativo 0xC0000005 prima del caricamento della mod, il secondo è passato). Screenshot rivisti a 427x240 e 1920x1080.
+- Problemi trovati e risolti: HUD e chat visibili sotto il menu (sfondo ora opaco), barre di pratica sovrapposte ai costi, schede delle forme troppo basse, titoli troppo larghi su finestre piccole, polvere e fiamme troppo grandi e ruotate, aspetto dell'anteprima del creator che restava sul giocatore.

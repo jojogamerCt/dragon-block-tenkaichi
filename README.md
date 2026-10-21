@@ -29,7 +29,7 @@ saving and configuration. Details in `docs/FEATURES.md`, verification status in 
 
 ## Changelog
 
-One file per version in [`changelog/`](changelog/): [0.1.0](changelog/0.1.0.md), [0.2.0](changelog/0.2.0.md).
+One file per version in [`changelog/`](changelog/): [0.1.0](changelog/0.1.0.md), [0.2.0](changelog/0.2.0.md), [0.3.0](changelog/0.3.0.md).
 
 ## Requirements
 

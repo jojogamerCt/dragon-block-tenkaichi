@@ -1,10 +1,8 @@
 package com.dbtenkaichi.client;
 
 import com.dbtenkaichi.Tenkaichi;
-import com.dbtenkaichi.client.input.LockOn;
 import com.dbtenkaichi.client.screen.CharacterCreatorScreen;
 import com.dbtenkaichi.client.screen.CharacterScreen;
-import com.dbtenkaichi.form.TransformationSystem;
 import com.dbtenkaichi.network.ActionType;
 import com.dbtenkaichi.network.Packets;
 import com.dbtenkaichi.platform.Services;
@@ -12,15 +10,18 @@ import com.dbtenkaichi.player.Appearance;
 import com.dbtenkaichi.player.HairStyle;
 import com.dbtenkaichi.player.PlayerData;
 import com.dbtenkaichi.race.Race;
+import com.dbtenkaichi.registry.ModSounds;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public final class ClientSmokeTest {
     private static final boolean ENABLED = Boolean.getBoolean("dbtenkaichi.clientSmoke");
@@ -52,171 +53,6 @@ public final class ClientSmokeTest {
         Services.NETWORK.sendToServer(new Packets.Action(type.ordinal(), arg));
     }
 
-    private static net.minecraft.world.phys.Vec3 trialOrigin;
-    private static final String[] BEAMS = {"final_flash"};
-    private static final String[] BLASTS = {"big_bang_attack"};
-
-    private static void forceForm(Minecraft mc, String name, String formId) {
-        IntegratedServer server = mc.getSingleplayerServer();
-        if (server == null) {
-            return;
-        }
-        server.execute(() -> {
-            ServerPlayer sp = server.getPlayerList().getPlayerByName(name);
-            if (sp == null) {
-                return;
-            }
-            PlayerData pd = com.dbtenkaichi.server.PlayerManager.data(sp);
-            if (formId == null) {
-                TransformationSystem.forceRevert(sp, pd, null);
-                return;
-            }
-            com.dbtenkaichi.form.FormDefinition form = com.dbtenkaichi.form.FormRegistry.get(formId, false);
-            if (form != null) {
-                TransformationSystem.begin(sp, pd, form, TransformationSystem.CINEMATIC_AUTO, true, sp.level().getGameTime());
-            }
-        });
-    }
-
-    private static void quickForm(Minecraft mc, String name, String formId) {
-        IntegratedServer server = mc.getSingleplayerServer();
-        if (server == null) {
-            return;
-        }
-        server.execute(() -> {
-            ServerPlayer sp = server.getPlayerList().getPlayerByName(name);
-            com.dbtenkaichi.form.FormDefinition form = com.dbtenkaichi.form.FormRegistry.get(formId, false);
-            if (sp != null && form != null) {
-                TransformationSystem.begin(sp, com.dbtenkaichi.server.PlayerManager.data(sp), form, TransformationSystem.CINEMATIC_SKIP, false, sp.level().getGameTime());
-            }
-        });
-    }
-
-    private static void previewHair(Minecraft mc, int style) {
-        PlayerData data = Services.PLATFORM.playerData(mc.player);
-        com.dbtenkaichi.player.Appearance a = com.dbtenkaichi.player.Appearance.defaultsFor(Race.SAIYAN);
-        a.load(data.appearance().save());
-        a.hairStyle = style;
-        ClientState.preview = a;
-        ClientState.previewRace = Race.SAIYAN;
-        mc.gui.setScreen(new PosePreview(25.0f));
-    }
-
-    private static final HairStyle[] SSJ2_HAIR = {HairStyle.GOKU, HairStyle.GOHAN, HairStyle.VEGETA, HairStyle.TRUNKS, HairStyle.YAMCHA};
-
-    private static void hairGallery(Minecraft mc, String name, int c) {
-        if (c == 0) {
-            mc.gui.setScreen(null);
-            quickForm(mc, name, "dbtenkaichi:super_saiyan_2");
-            return;
-        }
-        int base = c - 12;
-        if (base >= 0 && base < SSJ2_HAIR.length * 3) {
-            HairStyle style = SSJ2_HAIR[base / 3];
-            if (base % 3 == 0) {
-                previewHair(mc, style.ordinal());
-            } else if (base % 3 == 2) {
-                shot(mc, "21_ssj2_" + style.id());
-            }
-            return;
-        }
-        if (c == 12 + SSJ2_HAIR.length * 3) {
-            ClientState.preview = null;
-            ClientState.previewRace = null;
-            mc.gui.setScreen(null);
-            forceForm(mc, name, null);
-        }
-    }
-
-    private static void showcase(Minecraft mc, String name, int t) {
-        if (t < 0 || t >= 8 + BEAMS.length * 140 + BLASTS.length * 100) {
-            return;
-        }
-        if (t == 0) {
-            mc.gui.setScreen(null);
-            if (trialOrigin != null) {
-                command(mc, String.format(java.util.Locale.ROOT, "tp %s %.2f %.2f %.2f", name, trialOrigin.x, trialOrigin.y, trialOrigin.z));
-            }
-            for (String id : BEAMS) {
-                command(mc, "tenkaichi learn " + name + " dbtenkaichi:" + id);
-            }
-            for (String id : BLASTS) {
-                command(mc, "tenkaichi learn " + name + " dbtenkaichi:" + id);
-            }
-            return;
-        }
-        if (t == 2) {
-            action(ActionType.FLIGHT_TOGGLE, 0);
-            return;
-        }
-        int beam = (t - 8) / 140;
-        int local = (t - 8) % 140;
-        if (t >= 8 && beam < BEAMS.length) {
-            String id = "dbtenkaichi:" + BEAMS[beam];
-            String label = "18" + (char) ('a' + beam) + "_" + BEAMS[beam];
-            switch (local) {
-                case 0 -> {
-                    command(mc, "tenkaichi restore " + name);
-                    Services.NETWORK.sendToServer(new Packets.AssignSlot(0, id));
-                }
-                case 4 -> action(ActionType.SKILL_PRESS, 0);
-                case 18 -> mc.gui.setScreen(new PosePreview(25.0f));
-                case 20 -> {
-                    LOG.add(label + " style " + com.dbtenkaichi.ki.SkillStyle.fromFlags(ClientState.flags));
-                    shot(mc, label + "_charge");
-                }
-                case 21 -> {
-                    mc.gui.setScreen(null);
-                    mc.options.setCameraType(CameraType.FIRST_PERSON);
-                }
-                case 25 -> shot(mc, label + "_charge_fp");
-                case 26 -> mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-                case 40 -> action(ActionType.SKILL_RELEASE, 0);
-                case 50 -> shot(mc, label + "_beam");
-                case 46 -> mc.gui.setScreen(new PosePreview(25.0f));
-                case 48 -> shot(mc, label + "_fire");
-                case 49 -> {
-                    mc.gui.setScreen(null);
-                    mc.options.setCameraType(CameraType.FIRST_PERSON);
-                }
-                case 52 -> shot(mc, label + "_fire_fp");
-                case 53 -> mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-                default -> {
-                }
-            }
-            return;
-        }
-        int blastStart = 8 + BEAMS.length * 140;
-        int blast = (t - blastStart) / 100;
-        int b = (t - blastStart) % 100;
-        if (t >= blastStart && blast < BLASTS.length) {
-            String label = "18" + (char) ('a' + BEAMS.length + blast) + "_" + BLASTS[blast];
-            switch (b) {
-                case 0 -> {
-                    command(mc, "tenkaichi restore " + name);
-                    Services.NETWORK.sendToServer(new Packets.AssignSlot(0, "dbtenkaichi:" + BLASTS[blast]));
-                }
-                case 5 -> mc.player.setXRot(55.0f);
-                case 6 -> action(ActionType.SKILL_PRESS, 0);
-                case 10 -> shot(mc, label + "_fire");
-                case 11 -> action(ActionType.SKILL_RELEASE, 0);
-                case 60 -> shot(mc, label + "_crater");
-                case 61 -> mc.player.setXRot(0.0f);
-                default -> {
-                }
-            }
-        }
-    }
-
-    private static void tour(Minecraft mc, String name, String site, int dx, int dy, int dz, int lx, int ly, int lz) {
-        net.minecraft.core.BlockPos pos = com.dbtenkaichi.world.Landmarks.sites().get(site);
-        if (pos == null) {
-            LOG.add("missing landmark " + site);
-            return;
-        }
-        command(mc, String.format(java.util.Locale.ROOT, "tp %s %d %d %d facing %d %d %d", name, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz, pos.getX() + lx, pos.getY() + ly, pos.getZ() + lz));
-    }
-
     private static void command(Minecraft mc, String cmd) {
         IntegratedServer server = mc.getSingleplayerServer();
         if (server != null) {
@@ -229,35 +65,39 @@ public final class ClientSmokeTest {
         LOG.add("shot " + name);
     }
 
-    private static int kamehamehaSlot(PlayerData data) {
-        for (int i = 0; i < PlayerData.SKILL_SLOTS; i++) {
-            if ("dbtenkaichi:kamehameha".equals(data.skillInSlot(i))) {
-                return i;
+    private static void screenInfo(Minecraft mc, String label) {
+        if (mc.gui.screen() == null) {
+            LOG.add(label + ": no screen");
+            return;
+        }
+        int visible = 0;
+        int total = 0;
+        for (var child : mc.gui.screen().children()) {
+            if (child instanceof AbstractWidget widget) {
+                total++;
+                if (widget.visible) {
+                    visible++;
+                }
             }
         }
-        return -1;
+        LOG.add(String.format(Locale.ROOT, "%s: %s %dx%d widgets %d visible %d", label, mc.gui.screen().getClass().getSimpleName(), mc.gui.screen().width, mc.gui.screen().height, total, visible));
     }
 
-    private static final class PosePreview extends net.minecraft.client.gui.screens.Screen {
-        private final float yaw;
-
-        PosePreview(float yaw) {
-            super(net.minecraft.network.chat.Component.empty());
-            this.yaw = yaw;
-        }
-
-        @Override
-        public void extractRenderState(net.minecraft.client.gui.GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
-            Minecraft mc = Minecraft.getInstance();
-            if (mc.player != null) {
-                com.dbtenkaichi.client.screen.EntityPreview.draw(g, 0, 0, this.width, this.height, 70, yaw, -5.0f, 1.0f, mc.player);
+    private static void sounds(Minecraft mc) {
+        List<String> missing = new ArrayList<>();
+        for (String name : ModSounds.NAMES) {
+            if (mc.getSoundManager().getSoundEvent(Identifier.fromNamespaceAndPath(Tenkaichi.MOD_ID, name)) == null) {
+                missing.add(name);
             }
         }
+        LOG.add("sound events " + ModSounds.NAMES.size() + " missing " + missing);
+    }
 
-        @Override
-        public boolean isPauseScreen() {
-            return false;
-        }
+    private static void summonRaider(Minecraft mc, double distance, double side) {
+        Vec3 look = mc.player.getLookAngle().multiply(1, 0, 1).normalize();
+        Vec3 right = new Vec3(-look.z, 0, look.x);
+        Vec3 at = mc.player.position().add(look.scale(distance)).add(right.scale(side));
+        command(mc, String.format(Locale.ROOT, "summon dbtenkaichi:saiyan_raider %.2f %.2f %.2f {NoAI:1b,NoGravity:1b}", at.x, mc.player.getY(), at.z));
     }
 
     private static void step(Minecraft mc) {
@@ -266,15 +106,16 @@ public final class ClientSmokeTest {
         switch (tick) {
             case 2 -> {
                 command(mc, "kill @e[type=dbtenkaichi:saiyan_raider]");
-                command(mc, "kill @e[type=minecraft:husk]");
                 command(mc, "difficulty peaceful");
+                command(mc, "time set day");
+                command(mc, "weather clear");
+                command(mc, "gamerule advance_time false");
             }
-            case 30 -> command(mc, "difficulty normal");
             case 40 -> {
-                boolean creator = mc.gui.screen() instanceof CharacterCreatorScreen;
-                LOG.add("creator opened on first join: " + creator);
-                Tenkaichi.LOG.info("[DBT-CLIENT] creator opened on first join: {}", creator);
+                LOG.add("creator opened on first join: " + (mc.gui.screen() instanceof CharacterCreatorScreen));
+                screenInfo(mc, "creator");
                 shot(mc, "01_creator");
+                sounds(mc);
             }
             case 60 -> {
                 Appearance a = Appearance.defaultsFor(Race.SAIYAN);
@@ -284,11 +125,6 @@ public final class ClientSmokeTest {
                 Services.NETWORK.sendToServer(new Packets.CreateCharacter(Race.SAIYAN.ordinal(), a.presentation, 1.0f, a.build, a.skinColor, a.eyeStyle, a.eyeColor,
                         a.eyebrowStyle, a.hairStyle, a.hairColor, a.expression, a.voice, a.auraColor, a.outfit, a.outfitPrimary, a.outfitSecondary, a.featureColor, true, false));
                 mc.gui.setScreen(null);
-                command(mc, "time set day");
-                command(mc, "weather clear");
-                command(mc, "gamerule advance_time false");
-                command(mc, "kill @e[type=dbtenkaichi:saiyan_raider]");
-                command(mc, "kill @e[type=minecraft:husk]");
             }
             case 80 -> {
                 for (String stat : new String[]{"strength", "defense", "constitution", "ki_control", "ki_capacity", "ki_output", "speed", "agility", "stamina", "martial_arts", "spirit", "potential"}) {
@@ -298,242 +134,62 @@ public final class ClientSmokeTest {
                 command(mc, "tenkaichi unlockform " + name + " dbtenkaichi:super_saiyan");
                 command(mc, "tenkaichi restore " + name);
                 command(mc, "give " + name + " dbtenkaichi:senzu_bean 8");
-                command(mc, "give " + name + " dbtenkaichi:master_spawn_egg");
-                command(mc, "give " + name + " dbtenkaichi:saiyan_raider_spawn_egg");
+                command(mc, "damage " + name + " 6");
+            }
+            case 90 -> {
+                Services.NETWORK.sendToServer(new Packets.AssignSlot(0, "dbtenkaichi:ki_blast"));
+                Services.NETWORK.sendToServer(new Packets.AssignSlot(1, "dbtenkaichi:kamehameha"));
                 mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
-            }
-            case 110 -> {
-                LOG.add("character created client-side: " + data.isCreated() + " race=" + data.race().id());
-                Tenkaichi.LOG.info("[DBT-CLIENT] character created: {} race {} skills {}", data.isCreated(), data.race().id(), data.skills());
-                shot(mc, "02_character_hud");
-                LOG.add("outfit equipped: " + mc.player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.CHEST).getItem() + ", " + mc.player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.LEGS).getItem() + ", " + mc.player.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.FEET).getItem());
-            }
-            case 120 -> action(ActionType.CHARGE_START, 0);
-            case 150 -> shot(mc, "03_ki_charge_aura");
-            case 160 -> action(ActionType.CHARGE_END, 0);
-            case 170 -> action(ActionType.FLIGHT_TOGGLE, 0);
-            case 175, 180, 185, 190 -> mc.player.setDeltaMovement(new Vec3(0, 0.5, 0));
-            case 200 -> {
-                LOG.add("flying after toggle: " + data.runtime().flying);
-                Tenkaichi.LOG.info("[DBT-CLIENT] flying: {}", data.runtime().flying);
-                shot(mc, "04_flight");
-            }
-            case 220 -> action(ActionType.TRANSFORM_UP, TransformationSystem.CINEMATIC_AUTO);
-            case 227 -> shot(mc, "05a_ssj_face_closeup");
-            case 361 -> shot(mc, "05g_ssj_reveal");
-            case 385 -> {
-                LOG.add("form after transformation: " + data.form());
-                Tenkaichi.LOG.info("[DBT-CLIENT] form: {}", data.form());
-                shot(mc, "06_super_saiyan");
-            }
-            case 430 -> {
-                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-                Vec3 look = mc.player.getLookAngle().multiply(1, 0, 1).normalize();
-                Vec3 at = mc.player.position().add(look.scale(30));
-                command(mc, String.format(java.util.Locale.ROOT, "summon dbtenkaichi:saiyan_raider %.1f %.1f %.1f {NoAI:1b,NoGravity:1b}", at.x, mc.player.getY(), at.z));
-                Vec3 side = mc.player.position().add(look.cross(new Vec3(0, 1, 0)).scale(5));
-                command(mc, String.format(java.util.Locale.ROOT, "summon dbtenkaichi:master %.1f %.1f %.1f {NoGravity:1b}", side.x, mc.player.getY(), side.z));
-                for (int kind = 1; kind <= 3; kind++) {
-                    Vec3 spot = side.add(look.scale(2.2 * kind));
-                    command(mc, String.format(java.util.Locale.ROOT, "summon dbtenkaichi:master %.1f %.1f %.1f {NoGravity:1b,master_kind:%d}", spot.x, mc.player.getY(), spot.z, kind));
-                }
-            }
-            case 460 -> shot(mc, "07_npcs");
-            case 470 -> {
-                LockOn.toggle();
-                LOG.add("locked target: " + LockOn.target());
-            }
-            case 480 -> {
-                int slot = kamehamehaSlot(data);
-                LOG.add("kamehameha slot: " + slot);
-                if (slot >= 0) {
-                    action(ActionType.SKILL_PRESS, slot);
-                }
-            }
-            case 496 -> mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
-            case 504 -> {
-                mc.player.getInventory().setSelectedSlot(8);
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-            }
-            case 511 -> mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-            case 528 -> shot(mc, "08_kamehameha_charge");
-            case 530 -> {
-                int slot = kamehamehaSlot(data);
-                if (slot >= 0) {
-                    action(ActionType.SKILL_RELEASE, slot);
-                }
-            }
-            case 531 -> {
-                LockOn.release();
-                mc.player.setYRot(mc.player.getYRot() + 70.0f);
-                mc.player.setXRot(10.0f);
-                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-            }
-            case 535 -> shot(mc, "09_kamehameha_fire");
-            case 536 -> {
-                IntegratedServer server = mc.getSingleplayerServer();
-                if (server != null) {
-                    server.execute(() -> {
-                        ServerPlayer sp = server.getPlayerList().getPlayerByName(name);
-                        if (sp == null) {
-                            return;
-                        }
-                        var raiders = sp.level().getEntitiesOfClass(com.dbtenkaichi.entity.RaiderEntity.class, sp.getBoundingBox().inflate(40));
-                        if (!raiders.isEmpty()) {
-                            var raider = raiders.getFirst();
-                            raider.lookAtPoint(sp.getEyePosition());
-                            var beam = com.dbtenkaichi.entity.KiBeamEntity.create(sp.level(), raider, com.dbtenkaichi.ki.Techniques.RAIDER_CANNON, 0.8);
-                            sp.level().addFreshEntity(beam);
-                            LOG.add("raider counter beam fired");
-                        }
-                    });
-                }
-            }
-            case 546 -> shot(mc, "10b_beam_clash_side");
-            case 552 -> {
-                LOG.add("beam clash active on client: " + (ClientState.clashId >= 0) + " balance " + ClientState.clashBalance);
-                Tenkaichi.LOG.info("[DBT-CLIENT] beam clash active: {} balance {}", ClientState.clashId >= 0, ClientState.clashBalance);
-                shot(mc, "10_beam_clash");
-            }
-            case 558, 566 -> action(ActionType.CLASH_PULSE, 0);
-            case 568 -> {
-                int slot = kamehamehaSlot(data);
-                if (slot >= 0) {
-                    action(ActionType.SKILL_RELEASE, slot);
-                }
-                command(mc, "kill @e[type=dbtenkaichi:saiyan_raider]");
-            }
-            case 574 -> {
-                Vec3 look = mc.player.getLookAngle().multiply(1, 0, 1).normalize();
-                Vec3 near = mc.player.position().add(look.scale(3));
-                command(mc, String.format(java.util.Locale.ROOT, "summon dbtenkaichi:saiyan_raider %.1f %.1f %.1f {NoAI:1b,NoGravity:1b}", near.x, mc.player.getY(), near.z));
-            }
-            case 576 -> {
-                action(ActionType.COMBAT_STANCE, 1);
-                IntegratedServer server = mc.getSingleplayerServer();
-                if (server != null) {
-                    server.execute(() -> {
-                        ServerPlayer sp = server.getPlayerList().getPlayerByName(name);
-                        if (sp != null) {
-                            var raiders = sp.level().getEntitiesOfClass(com.dbtenkaichi.entity.RaiderEntity.class, sp.getBoundingBox().inflate(40));
-                            LOG.add("raiders near after beam: " + raiders.size());
-                            if (!raiders.isEmpty()) {
-                                var r = raiders.getFirst();
-                                Vec3 dir = r.position().subtract(sp.position()).normalize();
-                                Vec3 to = r.position().subtract(dir.scale(2.2));
-                                sp.teleportTo(to.x, r.getY(), to.z);
-                            }
-                        }
-                    });
-                }
-            }
-            case 580, 586, 592, 598, 606 -> action(ActionType.LIGHT_ATTACK, 0);
-            case 600 -> {
-                mc.player.getInventory().setSelectedSlot(8);
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-            }
-            case 608 -> shot(mc, "11b_first_person_punch");
-            case 612 -> mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-            case 588 -> shot(mc, "11_melee_combo");
-            case 620 -> {
-                mc.gui.setScreen(new CharacterScreen(2));
-            }
-            case 630 -> shot(mc, "12_character_menu");
-            case 635 -> {
-                mc.gui.setScreen(null);
-                action(ActionType.TRANSFORM_DOWN, 0);
-                action(ActionType.COMBAT_STANCE, 0);
-                command(mc, "kill @e[type=dbtenkaichi:saiyan_raider]");
-            }
-            case 640 -> {
-                command(mc, "tenkaichi setstat " + name + " all 160");
-                command(mc, "tenkaichi restore " + name);
-            }
-            case 646 -> action(ActionType.TRANSFORM_UP, TransformationSystem.CINEMATIC_SKIP);
-            case 662 -> {
-                LOG.add("form after second transformation: " + data.form());
-                shot(mc, "12b_super_saiyan_2");
-                command(mc, "tenkaichi restore " + name);
-            }
-            case 666 -> action(ActionType.TRANSFORM_UP, TransformationSystem.CINEMATIC_SKIP);
-            case 684 -> {
-                LOG.add("form after third transformation: " + data.form());
-                LOG.add("skills after unlocks: " + new java.util.TreeSet<>(data.skills()));
-                shot(mc, "12c_super_saiyan_3");
-            }
-            case 690, 694, 698 -> action(ActionType.TRANSFORM_DOWN, 0);
-            case 700 -> {
-                command(mc, "tenkaichi learn " + name + " dbtenkaichi:kaioken");
-                command(mc, "tenkaichi restore " + name);
-            }
-            case 704 -> action(ActionType.KAIOKEN, 0);
-            case 716 -> {
-                LOG.add("kaioken level after first press: " + com.dbtenkaichi.form.KaiokenSystem.fromFlags(ClientState.forEntity(mc.player).flags) + " bp " + ClientState.battlePower);
-                shot(mc, "14a_kaioken");
-            }
-            case 720 -> action(ActionType.KAIOKEN, 0);
-            case 726 -> {
-                LOG.add("kaioken level after second press: " + com.dbtenkaichi.form.KaiokenSystem.fromFlags(ClientState.forEntity(mc.player).flags) + " bp " + ClientState.battlePower);
-                command(mc, "tenkaichi restore " + name);
-            }
-            case 730 -> action(ActionType.TRANSFORM_UP, TransformationSystem.CINEMATIC_SKIP);
-            case 746 -> action(ActionType.KAIOKEN, 0);
-            case 758 -> {
-                LOG.add("form with kaioken: " + data.form() + " level " + com.dbtenkaichi.form.KaiokenSystem.fromFlags(ClientState.forEntity(mc.player).flags) + " bp " + ClientState.battlePower);
-                shot(mc, "14b_super_saiyan_kaioken");
-            }
-            case 762, 766 -> action(ActionType.TRANSFORM_DOWN, 0);
-            case 772 -> {
-                command(mc, "tenkaichi restore " + name);
-                trialOrigin = mc.player.position();
-                LOG.add(String.format(java.util.Locale.ROOT, "trial origin %.2f %.2f %.2f in %s", trialOrigin.x, trialOrigin.y, trialOrigin.z, mc.player.level().dimension().identifier()));
-                command(mc, "tenkaichi trial start " + name + " sacred_water");
-            }
-            case 790 -> {
-                LOG.add("trial dimension: " + mc.player.level().dimension().identifier());
-                shot(mc, "15a_trial_countdown");
-            }
-            case 885 -> {
-                java.util.List<com.dbtenkaichi.entity.MasterEntity> rivals = mc.level.getEntitiesOfClass(com.dbtenkaichi.entity.MasterEntity.class, mc.player.getBoundingBox().inflate(24));
-                LOG.add("trial opponents near: " + rivals.size() + (rivals.isEmpty() ? "" : " kind " + rivals.get(0).kind() + " distance " + String.format(java.util.Locale.ROOT, "%.1f", rivals.get(0).distanceTo(mc.player))));
-                mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
-            }
-            case 887 -> {
-                shot(mc, "15b_trial_fight");
-                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-            }
-            case 890 -> command(mc, "tenkaichi trial end " + name + " win");
-            case 905 -> {
-                net.minecraft.world.phys.Vec3 now = mc.player.position();
-                LOG.add(String.format(java.util.Locale.ROOT, "after trial %.2f %.2f %.2f in %s, origin distance %.3f, sacred water %s", now.x, now.y, now.z, mc.player.level().dimension().identifier(),
-                        trialOrigin == null ? -1.0 : now.distanceTo(trialOrigin), data.hasSkill("dbtenkaichi:sacred_water")));
-                shot(mc, "15c_trial_return");
-                command(mc, "title " + name + " clear");
-                mc.options.setCameraType(CameraType.FIRST_PERSON);
-                command(mc, "tenkaichi restore " + name);
                 action(ActionType.FLIGHT_TOGGLE, 0);
             }
-            case 910 -> tour(mc, name, com.dbtenkaichi.world.Landmarks.KAME_HOUSE, 5, 4, 12, 1, 5, -4);
-            case 940 -> shot(mc, "16a_kame_house");
-            case 945 -> tour(mc, name, com.dbtenkaichi.world.Landmarks.KORIN_TOWER, 14, 2, 8, 0, 4, -6);
-            case 975 -> shot(mc, "16b_korin_tower_top");
-            case 980 -> tour(mc, name, com.dbtenkaichi.world.Landmarks.KAMI_LOOKOUT, 0, -6, 42, 0, -4, -8);
-            case 1010 -> shot(mc, "16c_kami_lookout");
-            case 1015 -> tour(mc, name, com.dbtenkaichi.world.Landmarks.KAMI_LOOKOUT, 26, 6, 20, 0, 4, -8);
-            case 1040 -> shot(mc, "16d_kami_palace");
-            case 1044 -> {
-                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
-                LOG.add("landmarks: " + com.dbtenkaichi.world.Landmarks.sites());
+            case 94 -> command(mc, "execute as " + name + " at @s run tp @s ~ ~24 ~ 0 0");
+            case 110 -> {
+                LOG.add("character created: " + data.isCreated() + " race=" + data.race().id() + " skills=" + data.skills());
+                shot(mc, "02_hud");
+            }
+            case 120 -> action(ActionType.CHARGE_START, 0);
+            case 150 -> shot(mc, "03_aura_particles");
+            case 160 -> action(ActionType.CHARGE_END, 0);
+            case 170 -> mc.gui.setScreen(new CharacterScreen(0));
+            case 180 -> {
+                screenInfo(mc, "status tab");
+                shot(mc, "04a_screen_status");
+            }
+            case 182 -> {
+                if (mc.gui.screen() != null) {
+                    mc.gui.screen().mouseScrolled(mc.gui.screen().width - 40, mc.gui.screen().height / 2.0, 0, -20);
+                }
+            }
+            case 188 -> {
+                screenInfo(mc, "status tab scrolled");
+                shot(mc, "04b_screen_status_scrolled");
+            }
+            case 190 -> mc.gui.setScreen(new CharacterScreen(1));
+            case 200 -> {
+                screenInfo(mc, "techniques tab");
+                shot(mc, "04c_screen_techniques");
+            }
+            case 202 -> mc.gui.setScreen(new CharacterScreen(2));
+            case 212 -> {
+                screenInfo(mc, "forms tab");
+                shot(mc, "04d_screen_forms");
+            }
+            case 214 -> mc.gui.setScreen(new CharacterScreen(3));
+            case 224 -> {
+                screenInfo(mc, "settings tab");
+                shot(mc, "04e_screen_settings");
+            }
+            case 226 -> {
                 net.minecraft.nbt.CompoundTag menu = new net.minecraft.nbt.CompoundTag();
                 menu.putString("mode", "menu");
                 menu.putInt("master", -1);
-                menu.putInt("kind", com.dbtenkaichi.entity.MasterKind.KARIN.ordinal());
+                menu.putInt("kind", com.dbtenkaichi.entity.MasterKind.ROSHI.ordinal());
                 menu.putLong("tp", data.trainingPoints());
                 net.minecraft.nbt.ListTag lessons = new net.minecraft.nbt.ListTag();
-                for (com.dbtenkaichi.training.Lessons.Lesson lesson : com.dbtenkaichi.training.Lessons.forMaster(com.dbtenkaichi.entity.MasterKind.KARIN)) {
+                for (com.dbtenkaichi.training.Lessons.Lesson lesson : com.dbtenkaichi.training.Lessons.forMaster(com.dbtenkaichi.entity.MasterKind.ROSHI)) {
                     net.minecraft.nbt.CompoundTag entry = new net.minecraft.nbt.CompoundTag();
                     entry.putString("id", lesson.id());
-                    entry.putInt("state", data.hasSkill(lesson.skill()) ? com.dbtenkaichi.training.Lessons.DONE : com.dbtenkaichi.training.Lessons.AVAILABLE);
+                    entry.putInt("state", com.dbtenkaichi.training.Lessons.AVAILABLE);
                     entry.putInt("price", lesson.price());
                     entry.putBoolean("trial", lesson.trial());
                     entry.putLong("bp", lesson.battlePower());
@@ -542,27 +198,50 @@ public final class ClientSmokeTest {
                 menu.put("lessons", lessons);
                 mc.gui.setScreen(new com.dbtenkaichi.client.screen.TrainingScreen(menu));
             }
-            case 1048 -> shot(mc, "17_master_lessons");
-            case 1350 -> {
-                mc.gui.setScreen(null);
-                net.minecraft.core.BlockPos kame = com.dbtenkaichi.world.Landmarks.sites().get(com.dbtenkaichi.world.Landmarks.KAME_HOUSE);
-                if (kame != null) {
-                    command(mc, "tp " + name + " " + (kame.getX() + 0.5) + " " + (kame.getY() - 1.6) + " " + (kame.getZ() + 26.5) + " 180 10");
-                }
-                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+            case 234 -> {
+                screenInfo(mc, "training");
+                shot(mc, "05_training");
             }
-            case 1354 -> action(ActionType.CHARGE_START, 0);
-            case 1364 -> shot(mc, "25_aura_over_water");
-            case 1366 -> action(ActionType.CHARGE_END, 0);
-            case 1370 -> {
+            case 236 -> {
                 mc.gui.setScreen(null);
+                mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
+                mc.player.setXRot(5.0f);
+                command(mc, "tenkaichi restore " + name);
+            }
+            case 240 -> action(ActionType.SKILL_PRESS, 0);
+            case 242 -> action(ActionType.SKILL_RELEASE, 0);
+            case 245 -> shot(mc, "06_ki_blast_cube_core");
+            case 260 -> summonRaider(mc, 26, 0);
+            case 266 -> action(ActionType.SKILL_PRESS, 1);
+            case 300 -> action(ActionType.SKILL_RELEASE, 1);
+            case 306 -> {
+                mc.player.setYRot(mc.player.getYRot() + 90.0f);
+                mc.player.setXRot(30.0f);
+            }
+            case 308 -> shot(mc, "07_beam_prism_core");
+            case 330 -> {
+                mc.player.setYRot(mc.player.getYRot() - 90.0f);
+                mc.player.setXRot(10.0f);
+                command(mc, "kill @e[type=dbtenkaichi:saiyan_raider]");
+                command(mc, "tenkaichi restore " + name);
+            }
+            case 334 -> summonRaider(mc, 2.0, 1.2);
+            case 336 -> {
+                com.dbtenkaichi.client.input.LockOn.toggle();
+                LOG.add("locked target: " + com.dbtenkaichi.client.input.LockOn.target());
+            }
+            case 338, 344, 350, 356 -> action(ActionType.LIGHT_ATTACK, 0);
+            case 352 -> shot(mc, "08_hit_sparks");
+            case 362 -> action(ActionType.HEAVY_ATTACK, 0);
+            case 366 -> shot(mc, "09_heavy_hit");
+            case 376 -> action(ActionType.DASH, 0);
+            case 390 -> {
+                LOG.add("health after test " + mc.player.getHealth() + " ki " + ClientState.ki);
                 finished = true;
                 Tenkaichi.LOG.info("[DBT-CLIENT] RESULT {}", LOG);
                 mc.stop();
             }
             default -> {
-                showcase(mc, name, tick - 1052);
-                hairGallery(mc, name, tick - 1310);
             }
         }
     }

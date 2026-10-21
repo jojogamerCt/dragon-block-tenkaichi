@@ -171,9 +171,19 @@ def reverb(x, wet=0.25, length=1.2, damping=4000.0):
     return out
 
 
+def blocky(x, amount=0.16, bits=7, hold=2):
+    held = np.repeat(x[::hold], hold)[:len(x)]
+    if len(held) < len(x):
+        held = np.concatenate([held, np.zeros(len(x) - len(held))])
+    q = np.round(held * (2 ** bits)) / (2 ** bits)
+    return x * (1 - amount) + q * amount
+
+
 def finish(x, level=0.9, room=0.18, length=0.8, tail_fade=0.02):
-    y = reverb(x, room, length) if room > 0 else x
-    y = highpass(y, 28, 2)
+    y = reverb(x, room * 0.6, length * 0.75) if room > 0 else x
+    y = highpass(y, 32, 2)
+    y = lowpass(y, 12500, 2)
+    y = blocky(peak(y, 0.95))
     y = compress(y, 0.45, 3.0)
     y = peak(y, level)
     f = n_of(tail_fade)
@@ -384,6 +394,37 @@ def scream(rng, seconds, f0, f1):
     return finish(mix((main + octave) * e, power), 0.95, 0.3, 1.4)
 
 
+def anime_punch(rng, heavy=False):
+    s = 0.7 if heavy else 0.38
+    pitch = rng.uniform(0.92, 1.1)
+    crack = highpass(white(s, rng), 2500) * env_exp(s, 0.0003, 0.007) * 1.1
+    smack = sweep_filter(white(s, rng), 2400 * pitch, 380, 3.0, "band", 24) * env_exp(s, 0.0008, 0.05 if heavy else 0.03) * 1.3
+    body = thump(170 * pitch, 50, s, 0.11 if heavy else 0.06) * (1.3 if heavy else 0.9)
+    snap = resonator(white(s, rng) * env_exp(s, 0.0002, 0.0012), 3100 * pitch, 7) * 0.7
+    tail = whoosh(rng, s, 3000, 400, 0.08, 1.4, 0.25)
+    out = mix(crack, smack, body, snap, tail * 0.5)
+    if heavy:
+        sub = thump(75, 30, s, 0.2) * 0.9
+        crunch = crackle(s, rng, 500, 900, 6000, 0.003) * env_exp(s, 0.002, 0.08) * 0.6
+        out = saturate(mix(out, sub, crunch), 2.0)
+    return finish(out, 0.94, 0.16 if heavy else 0.08, 0.5)
+
+
+def scouter_beep(freq, seconds, level=0.5):
+    tone = osc(freq, seconds, "square") * 0.5 + osc(freq * 2.0, seconds, "sine") * 0.15
+    return lowpass(tone, 6000, 2) * env_adsr(seconds, 0.002, 0.01, 0.85, min(0.03, seconds * 0.3)) * level
+
+
+def aura_roar(rng, seconds, base=50.0, brightness=1.0):
+    t = tt(seconds)
+    flutter = 0.75 + 0.25 * np.sin(2 * np.pi * 9.0 * t) * np.sin(2 * np.pi * 0.7 * t)
+    jet = bandpass(brown(seconds, rng), 70, 900) * 1.6 * flutter
+    fire = bandpass(pink(seconds, rng), 600, 3200 * brightness) * 0.35 * (0.8 + 0.2 * np.sin(2 * np.pi * 4.3 * t))
+    hum = energy_hum(rng, seconds, base, brightness, 6.0) * 0.55
+    hiss = crackle(seconds, rng, 60 * brightness, 3000, 10000, 0.0015) * 0.45
+    return mix(jet, fire, hum, hiss)
+
+
 def generate():
     rng = np.random.default_rng(2026)
     sounds = {}
@@ -403,218 +444,252 @@ def generate():
             entry["subtitle"] = "subtitles.dbtenkaichi." + event
         sounds[event] = entry
 
-    put("combat.punch_light", [punch(rng) for _ in range(4)])
-    put("combat.punch_heavy", [punch(rng, True) for _ in range(3)])
-    put("combat.kick", [finish(mix(whoosh(rng, 0.22, 400, 3000, 0.6, 1.4, 0.5), at(punch(rng), 0.12, 0.6)), 0.92, 0.1, 0.5) for _ in range(3)])
-    put("combat.swing", [whoosh(rng, rng.uniform(0.22, 0.3), rng.uniform(500, 800), rng.uniform(3500, 6000), 0.4) * 0.75 for _ in range(4)])
+    put("combat.punch_light", [anime_punch(rng) for _ in range(4)])
+    put("combat.punch_heavy", [anime_punch(rng, True) for _ in range(3)])
+    put("combat.kick", [finish(mix(whoosh(rng, 0.2, 500, 4000, 0.55, 1.4, 0.55), at(anime_punch(rng), 0.1, 0.6)), 0.93, 0.08, 0.5) for _ in range(3)])
+    put("combat.swing", [whoosh(rng, rng.uniform(0.16, 0.22), rng.uniform(700, 1000), rng.uniform(5000, 8000), 0.35, 2.0) * 0.8 for _ in range(4)])
 
     def guard():
-        s = 0.5
-        body = thump(220, 90, s, 0.06)
-        ring = resonator(white(s, rng) * env_exp(s, 0.0005, 0.004), 1900, 12) * 0.4
-        ring2 = resonator(white(s, rng) * env_exp(s, 0.0005, 0.004), 3100, 18) * 0.25
-        scrape = bandpass(white(s, rng), 600, 3000) * env_exp(s, 0.001, 0.05) * 0.5
-        return finish(mix(body, ring, ring2, scrape), 0.9, 0.2, 0.6)
+        s = 0.42
+        body = thump(240, 100, s, 0.05)
+        ring = resonator(white(s, rng) * env_exp(s, 0.0005, 0.003), 2100, 14) * 0.5
+        ring2 = resonator(white(s, rng) * env_exp(s, 0.0005, 0.003), 3500, 20) * 0.3
+        scrape = bandpass(white(s, rng), 800, 4000) * env_exp(s, 0.001, 0.035) * 0.6
+        return finish(mix(body, ring, ring2, scrape), 0.9, 0.12, 0.5)
 
     put("combat.guard", [guard() for _ in range(3)])
 
     def perfect_guard():
-        s = 1.2
-        bell = mix(tone_bell(1320, s, 0.5, 2.0, 2.0), tone_bell(1980, s, 0.35, 3.5, 1.5) * 0.5, tone_bell(2640, s, 0.25, 1.41, 1.2) * 0.3)
-        shine = sweep_filter(highpass(white(s, rng), 3000), 4000, 11000, 2.0) * env_exp(s, 0.01, 0.15) * 0.3
-        return finish(mix(bell, shine, guard() * 0.6), 0.9, 0.35, 1.4)
+        s = 1.0
+        bell = mix(tone_bell(1568, s, 0.4, 2.0, 2.0), at(tone_bell(2093, s, 0.35, 2.0, 1.5) * 0.7, 0.05, s))
+        shine = sweep_filter(highpass(white(s, rng), 3000), 4000, 12000, 2.0) * env_exp(s, 0.01, 0.12) * 0.3
+        return finish(mix(bell, shine, guard() * 0.7), 0.9, 0.25, 1.0)
 
     put("combat.perfect_guard", [perfect_guard()])
-    put("combat.guard_break", [finish(mix(punch(rng, True), osc(glide(1200, 140, 0.6, 0.7), 0.6, "saw") * env_exp(0.6, 0.005, 0.15) * 0.3, crackle(0.6, rng, 300, 1500, 8000) * env_exp(0.6, 0.001, 0.12) * 0.6), 0.95, 0.3, 0.9)])
+    put("combat.guard_break", [finish(mix(anime_punch(rng, True), osc(glide(1400, 120, 0.6, 0.6), 0.6, "saw") * env_exp(0.6, 0.004, 0.14) * 0.35,
+                                         crackle(0.6, rng, 400, 1500, 9000) * env_exp(0.6, 0.001, 0.1) * 0.7), 0.95, 0.2, 0.8)])
 
     def clash():
-        s = 1.4
-        a = punch(rng, True)
-        b = punch(rng, True)
-        shock = sweep_filter(pink(s, rng), 6000, 200, 1.4) * env_exp(s, 0.002, 0.25)
-        sub = thump(60, 25, s, 0.4)
-        return finish(mix(a, at(b, 0.035, s), shock * 0.8, sub), 0.95, 0.35, 1.4)
+        s = 1.2
+        a = anime_punch(rng, True)
+        b = anime_punch(rng, True)
+        shock = sweep_filter(pink(s, rng), 7000, 200, 1.4) * env_exp(s, 0.002, 0.2)
+        sub = thump(64, 26, s, 0.35)
+        return finish(mix(a, at(b, 0.03, s), shock * 0.9, sub), 0.95, 0.25, 1.1)
 
     put("combat.clash", [clash() for _ in range(2)])
-    put("combat.dodge", [whoosh(rng, 0.24, 1500, 9000, 0.3, 1.8) for _ in range(3)])
-    put("combat.dash", [whoosh(rng, 0.5, 250, 7000, 0.22, 1.4) for _ in range(2)])
+    put("combat.dodge", [whoosh(rng, 0.2, 1800, 10000, 0.25, 2.2) for _ in range(3)])
+    put("combat.dash", [finish(mix(whoosh(rng, 0.42, 300, 8000, 0.18, 1.6), thump(90, 40, 0.42, 0.06) * 0.4), 0.9, 0.08, 0.5) for _ in range(2)])
 
     def vanish():
-        s = 0.45
-        zip_tone = osc(glide(500, 5200, s, 0.6), s, "tri") * env_exp(s, 0.01, 0.08) * 0.4
-        air = whoosh(rng, s, 2000, 11000, 0.25, 2.0)
-        pop = resonator(white(s, rng) * env_exp(s, 0.0003, 0.002), 3800, 8) * 0.5
-        return finish(mix(zip_tone, air, at(pop, 0.1, s)), 0.9, 0.25, 0.8)
+        s = 0.5
+        vib = 1.0 + 0.03 * np.sin(2 * np.pi * 38 * tt(s))
+        zip1 = osc(glide(700, 5200, s, 0.45) * vib, s, "sine") * env_exp(s, 0.004, 0.06) * 0.6
+        zip2 = at(osc(glide(1200, 7000, 0.3, 0.5), 0.3, "sine") * env_exp(0.3, 0.003, 0.04) * 0.4, 0.07, s)
+        air = whoosh(rng, s, 3000, 12000, 0.15, 2.0, 0.6)
+        return finish(mix(zip1, zip2, air), 0.9, 0.2, 0.7)
 
     put("combat.vanish", [vanish() for _ in range(2)])
 
     def charge_start():
-        s = 1.6
-        hum = energy_hum(rng, s, 55, 1.0, 6.0)
-        e = env_adsr(s, 0.5, 0.3, 0.8, 0.6)
-        rise = sweep_filter(pink(s, rng), 150, 3000, 1.2) * env_adsr(s, 0.9, 0.2, 0.5, 0.4) * 0.6
-        burst = thump(110, 45, s, 0.2) * 0.6
-        return finish(mix(hum * e, rise, burst), 0.9, 0.3, 1.2)
+        s = 1.5
+        roar = aura_roar(rng, s, 52, 1.0)
+        e = env_adsr(s, 0.25, 0.3, 0.75, 0.6)
+        rise = sweep_filter(pink(s, rng), 200, 4000, 1.2) * env_adsr(s, 0.5, 0.2, 0.5, 0.5) * 0.6
+        burst = thump(120, 45, s, 0.18) * 0.7
+        return finish(mix(roar * e, rise, burst), 0.9, 0.2, 1.0)
 
     put("ki.charge_start", [charge_start()])
-    put("ki.charge_loop", [loopable(finish(energy_hum(rng, 3.0, 52, 1.2, 6.5), 0.8, 0.2, 1.0, 0.001))], False)
+    put("ki.charge_loop", [loopable(finish(aura_roar(rng, 3.0, 50, 1.1), 0.8, 0.12, 0.8, 0.001))], False)
 
     def ki_blast():
-        s = 0.7
-        zap = osc(glide(2200, 300, s, 0.4), s, "saw") * env_exp(s, 0.002, 0.08)
-        zap = sweep_filter(zap, 5000, 600, 1.0, "low", 24) * 0.5
-        thrust = sweep_filter(pink(s, rng), 4000, 500, 1.6) * env_exp(s, 0.003, 0.12)
-        core = fm(glide(400, 180, s), 2.0, 3.0, s, env_exp(s, 0.002, 0.06)) * env_exp(s, 0.002, 0.15) * 0.4
-        sparks = crackle(s, rng, 120, 3000, 10000) * env_exp(s, 0.002, 0.15) * 0.5
-        return finish(mix(zap, thrust, core, sparks, thump(140, 60, s, 0.05) * 0.5), 0.9, 0.2, 0.8)
+        s = 0.55
+        zap = osc(glide(1900, 260, s, 0.35), s, "square") * env_exp(s, 0.002, 0.06) * 0.45
+        zap = lowpass(zap, 5000, 2)
+        ring = osc(glide(900, 500, s, 0.5), s, "sine") * env_exp(s, 0.002, 0.09) * 0.3
+        thrust = sweep_filter(pink(s, rng), 5000, 600, 1.6) * env_exp(s, 0.003, 0.1)
+        pop = thump(160, 70, s, 0.04) * 0.6
+        sparks = crackle(s, rng, 140, 3000, 10000) * env_exp(s, 0.002, 0.12) * 0.5
+        return finish(mix(zap, ring, thrust, pop, sparks), 0.9, 0.14, 0.6)
 
     put("ki.blast", [ki_blast() for _ in range(4)])
-    put("ki.impact", [explosion(rng, 1.4, 0.5) for _ in range(3)])
+    put("ki.impact", [explosion(rng, 1.1, 0.5) for _ in range(3)])
 
     def beam_charge():
-        s = 3.2
-        t = tt(s)
-        k = np.linspace(0, 1, len(t))
-        hum = energy_hum(rng, s, glide(60, 95, s, 1.5), 0.8 + k * 1.2, 4.0 + 10 * k)
-        trem = 0.7 + 0.3 * np.sin(2 * np.pi * np.cumsum(3 + 18 * k ** 2) / SR)
-        chord = sum(osc(glide(f, f * 2.0, s, 1.4), s, "sine") for f in (220, 277, 330)) * 0.12 * k ** 1.5
-        inhale = sweep_filter(pink(s, rng), 120, 6000, 1.0) * k ** 2 * 0.5
-        sparks = crackle(s, rng, 160, 2500, 10000) * k * 0.6
-        return finish(mix(hum * trem * (0.3 + 0.7 * k), chord, inhale, sparks), 0.92, 0.3, 1.4)
+        s = 3.0
+        k = np.linspace(0, 1, n_of(s))
+        roar = aura_roar(rng, s, 58, 1.2) * (0.25 + 0.75 * k)
+        whine = lowpass(osc(glide(300, 1500, s, 1.3), s, "saw") * 0.08 * k ** 1.6, 4000, 2)
+        chord = sum(osc(glide(f, f * 2.0, s, 1.4), s, "sine") for f in (220, 277, 330)) * 0.1 * k ** 1.5
+        trem = 0.75 + 0.25 * np.sin(2 * np.pi * np.cumsum(4 + 22 * k ** 2) / SR)
+        sparks = crackle(s, rng, 200, 2500, 10000) * k * 0.6
+        return finish(mix(roar * trem, whine, chord, sparks), 0.92, 0.2, 1.2)
 
     put("ki.beam_charge", [beam_charge()])
 
     def beam_fire():
-        s = 2.6
-        blast = explosion(rng, s, 0.8) * 0.8
-        jet = flanger(bandpass(pink(s, rng), 150, 5000), 0.004, 0.6, 0.5) * env_adsr(s, 0.02, 0.3, 0.7, 1.2) * 0.9
-        core = supersaw(glide(110, 82, s, 0.5), s, 9, 0.02, rng) * env_adsr(s, 0.01, 0.4, 0.6, 1.0) * 0.4
-        core = lowpass(core, 1800)
-        shimmer = fm(glide(880, 660, s), 1.5, 2.0, s) * env_exp(s, 0.01, 0.7) * 0.12
-        return finish(mix(blast, jet, core, shimmer), 0.95, 0.3, 1.6)
+        s = 2.4
+        blast = explosion(rng, s, 0.8) * 0.75
+        jet = flanger(bandpass(pink(s, rng), 150, 6000), 0.004, 0.7, 0.5) * env_adsr(s, 0.01, 0.3, 0.75, 1.1)
+        core = lowpass(supersaw(glide(120, 85, s, 0.5), s, 9, 0.02, rng), 2000) * env_adsr(s, 0.01, 0.4, 0.6, 1.0) * 0.45
+        zap = osc(glide(2400, 400, 0.4, 0.4), 0.4, "square") * env_exp(0.4, 0.002, 0.08) * 0.25
+        return finish(mix(blast, jet, core, zap), 0.95, 0.22, 1.3)
 
     put("ki.beam_fire", [beam_fire()])
 
     def beam_loop():
         s = 3.0
-        jet = flanger(bandpass(pink(s, rng), 120, 4500), 0.004, 0.5, 0.5)
-        core = lowpass(supersaw(82, s, 9, 0.02, rng), 1500) * 0.5
-        roar = lowpass(brown(s, rng), 250) * 1.2
-        sparks = crackle(s, rng, 90, 3000, 10000) * 0.4
-        return loopable(finish(mix(jet, core, roar, sparks), 0.85, 0.2, 1.0, 0.001))
+        jet = flanger(bandpass(pink(s, rng), 120, 5000), 0.004, 0.5, 0.5)
+        core = lowpass(supersaw(85, s, 9, 0.02, rng), 1600) * 0.5
+        roar = lowpass(brown(s, rng), 260) * 1.3
+        sparks = crackle(s, rng, 110, 3000, 10000) * 0.45
+        return loopable(finish(mix(jet, core, roar, sparks), 0.85, 0.12, 0.8, 0.001))
 
     put("ki.beam_loop", [beam_loop()], False)
-    put("ki.explosion", [explosion(rng, 3.4, 1.0) for _ in range(3)])
+    put("ki.explosion", [explosion(rng, 3.0, 1.0) for _ in range(3)])
 
     def clash_loop():
         s = 3.0
         t = tt(s)
-        jets = beam_loop()[:n_of(s)] if len(beam_loop()) >= n_of(s) else pad(beam_loop(), s)
-        grind = crackle(s, rng, 400, 800, 9000, 0.003) * (0.6 + 0.4 * np.sign(np.sin(2 * np.pi * 7 * t)))
-        pulse = osc(55, s) * (0.5 + 0.5 * np.sin(2 * np.pi * 2.0 * t)) * 0.4
-        return loopable(finish(mix(jets, grind, pulse), 0.88, 0.25, 1.0, 0.001))
+        jets = pad(beam_loop(), s)
+        grind = crackle(s, rng, 450, 800, 9000, 0.003) * (0.6 + 0.4 * np.sign(np.sin(2 * np.pi * 7 * t)))
+        pulse = osc(55, s) * (0.5 + 0.5 * np.sin(2 * np.pi * 2.0 * t)) * 0.45
+        return loopable(finish(mix(jets, grind, pulse), 0.88, 0.15, 0.8, 0.001))
 
     put("ki.clash_loop", [clash_loop()])
 
     def takeoff():
-        s = 1.0
-        return finish(mix(whoosh(rng, s, 150, 4000, 0.18, 1.2), thump(80, 35, s, 0.15) * 0.8, lowpass(brown(s, rng), 200) * env_exp(s, 0.01, 0.25) * 0.8), 0.9, 0.2, 1.0)
+        s = 0.9
+        return finish(mix(whoosh(rng, s, 200, 6000, 0.15, 1.3), thump(90, 38, s, 0.12) * 0.8, aura_roar(rng, s, 60, 0.8) * env_exp(s, 0.02, 0.25) * 0.5), 0.9, 0.12, 0.8)
 
     put("flight.takeoff", [takeoff() for _ in range(2)])
 
     def flight_loop():
         s = 3.0
         t = tt(s)
-        gust = bandpass(pink(s, rng), 250, 2800) * (0.75 + 0.25 * np.sin(2 * np.pi * 0.66 * t) + 0.1 * np.sin(2 * np.pi * 2.3 * t))
-        whistle = resonator(white(s, rng), 1700, 30) * 0.12 * (0.5 + 0.5 * np.sin(2 * np.pi * 0.33 * t))
+        gust = bandpass(pink(s, rng), 300, 3000) * (0.75 + 0.25 * np.sin(2 * np.pi * 0.66 * t) + 0.1 * np.sin(2 * np.pi * 2.3 * t))
+        whistle = resonator(white(s, rng), 1900, 30) * 0.1 * (0.5 + 0.5 * np.sin(2 * np.pi * 0.33 * t))
         return loopable(finish(mix(gust, whistle, lowpass(brown(s, rng), 120) * 0.6), 0.7, 0.0, 0.5, 0.001))
 
     put("flight.loop", [flight_loop()], False)
 
     def sonic():
-        s = 2.4
-        crack = highpass(white(s, rng), 800) * env_exp(s, 0.0003, 0.01) * 1.2
-        boom = thump(60, 22, s, 0.35) * 1.4
-        tail = lowpass(brown(s, rng), 400) * env_exp(s, 0.02, 0.5) * 1.2
-        sweep_air = sweep_filter(pink(s, rng), 8000, 300, 1.2) * env_exp(s, 0.005, 0.3) * 0.7
-        return finish(saturate(mix(crack, boom, tail, sweep_air), 1.6), 0.95, 0.4, 2.0)
+        s = 2.0
+        crack = highpass(white(s, rng), 900) * env_exp(s, 0.0003, 0.008) * 1.3
+        boom = thump(62, 22, s, 0.3) * 1.4
+        tail = lowpass(brown(s, rng), 400) * env_exp(s, 0.02, 0.4) * 1.2
+        sweep_air = sweep_filter(pink(s, rng), 9000, 300, 1.2) * env_exp(s, 0.004, 0.25) * 0.7
+        return finish(saturate(mix(crack, boom, tail, sweep_air), 1.7), 0.95, 0.3, 1.6)
 
     put("flight.sonic", [sonic()])
 
     def land():
-        s = 1.1
-        impact = thump(90, 30, s, 0.18) * 1.2
-        dirt = bandpass(crackle(s, rng, 300, 400, 4000, 0.004), 300, 4000) * env_exp(s, 0.002, 0.2) * 0.8
-        dust = bandpass(pink(s, rng), 200, 2500) * env_exp(s, 0.01, 0.3) * 0.6
-        return finish(mix(impact, dirt, dust), 0.92, 0.25, 1.0)
+        s = 0.9
+        impact = thump(100, 32, s, 0.14) * 1.3
+        dirt = bandpass(crackle(s, rng, 300, 400, 4000, 0.004), 300, 4000) * env_exp(s, 0.002, 0.15) * 0.7
+        dust = bandpass(pink(s, rng), 200, 2500) * env_exp(s, 0.01, 0.22) * 0.5
+        return finish(mix(impact, dirt, dust), 0.92, 0.15, 0.8)
 
     put("flight.land", [land() for _ in range(2)])
 
     def aura_burst():
-        s = 2.2
-        whoom = whoosh(rng, s, 90, 6000, 0.12, 1.2, 1.0)
-        boom = thump(85, 30, s, 0.3) * 1.2
-        flare = supersaw(glide(110, 220, s, 0.3), s, 7, 0.015, rng)
-        flare = sweep_filter(flare, 300, 4000, 1.0, "low", 24) * env_exp(s, 0.02, 0.5) * 0.5
-        sparks = crackle(s, rng, 200, 2500, 10000) * env_exp(s, 0.01, 0.6) * 0.6
-        return finish(mix(whoom, boom, flare, sparks), 0.95, 0.35, 1.6)
+        s = 1.9
+        whoom = whoosh(rng, s, 100, 7000, 0.1, 1.2, 1.0)
+        boom = thump(90, 30, s, 0.26) * 1.2
+        roar = aura_roar(rng, s, 60, 1.3) * env_exp(s, 0.01, 0.6) * 0.8
+        sparks = crackle(s, rng, 240, 2500, 10000) * env_exp(s, 0.01, 0.5) * 0.6
+        return finish(mix(whoom, boom, roar, sparks), 0.95, 0.25, 1.3)
 
     put("aura.burst", [aura_burst() for _ in range(2)])
-    put("aura.loop", [loopable(finish(energy_hum(rng, 3.0, 46, 0.9, 4.0) * 0.8, 0.75, 0.2, 1.0, 0.001))], False)
+    put("aura.loop", [loopable(finish(aura_roar(rng, 3.0, 46, 0.9) * 0.8, 0.75, 0.12, 0.8, 0.001))], False)
 
     def power_up():
         s = 3.0
         k = np.linspace(0, 1, n_of(s))
-        hum = energy_hum(rng, s, glide(48, 80, s, 1.2), 0.8 + k, 5.0)
-        rise = sweep_filter(pink(s, rng), 150, 5000, 1.2) * k ** 1.5 * 0.7
-        chord = sum(osc(glide(f, f * 1.5, s, 1.3), s, "saw") for f in (110, 165, 220)) * 0.08 * k
-        chord = lowpass(chord, 2500)
-        return finish(mix(hum * (0.3 + 0.7 * k), rise, chord), 0.92, 0.3, 1.4)
+        roar = aura_roar(rng, s, 48, 1.1) * (0.3 + 0.7 * k)
+        rise = sweep_filter(pink(s, rng), 150, 6000, 1.2) * k ** 1.5 * 0.7
+        chord = lowpass(sum(osc(glide(f, f * 1.5, s, 1.3), s, "saw") for f in (110, 165, 220)) * 0.08 * k, 2500)
+        quake = lowpass(brown(s, rng), 90) * k * 0.8
+        return finish(mix(roar, rise, chord, quake), 0.92, 0.22, 1.2)
 
     put("transform.power_up", [power_up()])
     put("transform.scream", [scream(rng, 3.0, 150, 290), scream(rng, 3.0, 190, 360), scream(rng, 3.0, 120, 250)])
 
     def revert():
-        s = 1.6
+        s = 1.4
         k = np.linspace(0, 1, n_of(s))
-        hum = energy_hum(rng, s, glide(80, 35, s, 0.6), 1.2 - k, 4.0) * (1 - k) ** 1.5
-        exhale = sweep_filter(pink(s, rng), 4000, 150, 1.2) * env_exp(s, 0.02, 0.5) * 0.6
-        return finish(mix(hum, exhale), 0.85, 0.3, 1.2)
+        roar = aura_roar(rng, s, 60, 1.0) * (1 - k) ** 1.8
+        exhale = sweep_filter(pink(s, rng), 4000, 150, 1.2) * env_exp(s, 0.02, 0.45) * 0.6
+        return finish(mix(roar, exhale), 0.85, 0.2, 1.0)
 
     put("transform.revert", [revert()])
-    put("transform.thunder", [thunder(rng, 3.8, 0.2), thunder(rng, 4.2, 0.6), thunder(rng, 3.6, 0.4)])
-    put("transform.rumble", [rumble(rng, 3.6), rumble(rng, 3.2)])
+    put("transform.thunder", [thunder(rng, 3.6, 0.2), thunder(rng, 4.0, 0.6), thunder(rng, 3.4, 0.4)])
+    put("transform.rumble", [rumble(rng, 3.4), rumble(rng, 3.0)])
 
     def click():
-        s = 0.12
-        return finish(mix(tone_bell(1800, s, 0.03, 2.0, 1.0) * 0.6, resonator(white(s, rng) * env_exp(s, 0.0002, 0.001), 4200, 10) * 0.3), 0.6, 0.05, 0.2)
+        s = 0.09
+        tick = resonator(white(s, rng) * env_exp(s, 0.0002, 0.0008), 4600, 10) * 0.5
+        return finish(mix(scouter_beep(2637, 0.045, 0.45), tick), 0.55, 0.0, 0.2, 0.005)
 
     put("ui.click", [click()], False)
 
+    def tab():
+        s = 0.16
+        return finish(mix(scouter_beep(2349, 0.05, 0.5), at(scouter_beep(3136, 0.05, 0.4), 0.06, s)), 0.5, 0.05, 0.3, 0.005)
+
+    put("ui.tab", [tab()])
+
+    def open_screen():
+        s = 0.7
+        beeps = [at(scouter_beep(f, 0.045, 0.45), i * 0.07, s) for i, f in enumerate((1976, 2349, 2637, 3136))]
+        trill = at(lowpass(osc(3136 + 120 * np.sign(np.sin(2 * np.pi * 30 * tt(0.22))), 0.22, "square") * env_adsr(0.22, 0.005, 0.02, 0.7, 0.08) * 0.18, 6000, 2), 0.3, s)
+        hum = bandpass(pink(s, rng), 800, 5000) * env_exp(s, 0.02, 0.2) * 0.12
+        return finish(mix(*beeps, trill, hum), 0.55, 0.12, 0.5)
+
+    put("ui.open", [open_screen()])
+
     def confirm():
-        s = 0.9
-        return finish(mix(tone_bell(880, s, 0.3, 2.0, 1.5), at(tone_bell(1318.5, s, 0.35, 2.0, 1.5), 0.07, s) * 0.8, at(tone_bell(1760, s, 0.4, 2.0, 1.2), 0.14, s) * 0.6), 0.7, 0.3, 1.0)
+        s = 0.8
+        return finish(mix(tone_bell(988, s, 0.25, 2.0, 1.4), at(tone_bell(1480, s, 0.3, 2.0, 1.4), 0.07, s) * 0.8,
+                          scouter_beep(2960, 0.05, 0.25)), 0.65, 0.2, 0.8)
 
     put("ui.confirm", [confirm()], False)
 
+    def upgrade():
+        s = 0.7
+        notes = (1319, 1661, 1976, 2637)
+        beeps = [at(scouter_beep(f, 0.05, 0.4), i * 0.055, s) for i, f in enumerate(notes)]
+        shine = at(tone_bell(2637, 0.4, 0.25, 2.0, 1.0) * 0.4, 0.22, s)
+        return finish(mix(*beeps, shine), 0.6, 0.15, 0.6)
+
+    put("ui.upgrade", [upgrade()])
+
+    def deny():
+        s = 0.32
+        a = osc(196, 0.12, "square") * env_adsr(0.12, 0.003, 0.02, 0.8, 0.03)
+        b = at(osc(165, 0.14, "square") * env_adsr(0.14, 0.003, 0.02, 0.8, 0.04), 0.15, s)
+        return finish(lowpass(mix(a, b), 3000, 2) * 0.5, 0.5, 0.05, 0.3, 0.005)
+
+    put("ui.deny", [deny()])
+
     def beat():
-        s = 0.4
-        return finish(mix(thump(120, 60, s, 0.08), tone_bell(440, s, 0.12, 1.0, 0.5) * 0.3), 0.75, 0.15, 0.6)
+        s = 0.35
+        return finish(mix(thump(130, 60, s, 0.07), scouter_beep(1760, 0.04, 0.2)), 0.72, 0.1, 0.5)
 
     put("training.beat", [beat()], False)
 
     def success():
-        s = 1.2
+        s = 1.1
         notes = (1046.5, 1318.5, 1568.0, 2093.0)
-        return finish(mix(*[at(tone_bell(f, s, 0.45, 2.0, 1.3), i * 0.06, s) * (1.0 - i * 0.15) for i, f in enumerate(notes)]), 0.75, 0.35, 1.2)
+        return finish(mix(*[at(tone_bell(f, s, 0.4, 2.0, 1.3), i * 0.06, s) * (1.0 - i * 0.15) for i, f in enumerate(notes)]), 0.72, 0.25, 1.0)
 
     put("training.success", [success()])
 
     def grunt():
-        s = 0.5
-        f = glide(rng.uniform(120, 150), rng.uniform(85, 105), s, 0.7)
-        v = voice(rng, s, f, "aa", "o", 1.5, 0.4)
-        return finish(v * env_adsr(s, 0.02, 0.1, 0.7, 0.25), 0.85, 0.15, 0.6)
+        s = 0.45
+        f = glide(rng.uniform(125, 155), rng.uniform(85, 105), s, 0.7)
+        v = voice(rng, s, f, "aa", "o", 1.6, 0.4)
+        return finish(v * env_adsr(s, 0.015, 0.1, 0.7, 0.22), 0.85, 0.1, 0.5)
 
     put("voice.grunt", [grunt() for _ in range(3)])
 

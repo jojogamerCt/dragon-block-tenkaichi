@@ -256,6 +256,16 @@ def creator():
     finish(brand(img), "08_character_creator")
 
 
+def menu():
+    img = grade(cover(shot("menu_status"), W, H), 1.05, 1.02)
+    img = bands(img, 250, 120)
+    img = gradient_text(img, "CHARACTER MENU", 150, W // 2, 22)
+    img = plain_text(img, "Full screen: your fighter, stats, techniques and transformations", 42, W // 2, 190)
+    techniques = cover(shot("menu_techniques"), 820, 462)
+    img = paste_card(img.convert("RGBA"), techniques, (60, 560, 880, 1022))
+    finish(brand(img), "08_character_menu")
+
+
 def destruction():
     hero("big_bang_crater", "DESTRUCTION!", "Big Bang Attack craters and explosions that grow with your power", "09_destruction", 0.5, 0.5, 1.1)
 
@@ -268,3 +278,4 @@ if __name__ == "__main__":
     locations()
     trials()
     kaioken()
+    menu()

@@ -60,6 +60,10 @@ public class TrainingScreen extends Screen {
         }
     }
 
+    private int centerY() {
+        return Math.max(this.height / 2, 126);
+    }
+
     private void send(String activity, int phase, int value) {
         Services.NETWORK.sendToServer(new Packets.TrainingInput(activity, phase, value));
     }
@@ -67,10 +71,10 @@ public class TrainingScreen extends Screen {
     @Override
     protected void init() {
         int cx = this.width / 2;
-        int y = this.height / 2 - 70;
+        int y = centerY() - 70;
         switch (mode) {
             case "menu" -> {
-                int top = this.height / 2 - 74;
+                int top = centerY() - 74;
                 String[] activities = {TrainingSystem.MEDITATION, TrainingSystem.KI_CONTROL, TrainingSystem.SPARRING, TrainingSystem.DODGE_DRILL};
                 for (int i = 0; i < activities.length; i++) {
                     String id = activities[i];
@@ -98,12 +102,12 @@ public class TrainingScreen extends Screen {
                         trial.active = state == Lessons.AVAILABLE;
                     }
                 }
-                addRenderableWidget(TenkaichiButton.create(Component.translatable("gui.done"), b -> onClose()).bounds(cx - 60, this.height / 2 + 72, 120, 20).build());
+                addRenderableWidget(TenkaichiButton.create(Component.translatable("gui.done"), b -> onClose()).bounds(cx - 60, centerY() + 72, 120, 20).build());
             }
-            case "summary" -> addRenderableWidget(TenkaichiButton.create(Component.translatable("gui.done"), b -> onClose()).bounds(cx - 60, this.height / 2 + 40, 120, 20).build());
+            case "summary" -> addRenderableWidget(TenkaichiButton.create(Component.translatable("gui.done"), b -> onClose()).bounds(cx - 60, centerY() + 40, 120, 20).build());
             default -> addRenderableWidget(TenkaichiButton.create(Component.translatable("training.dbtenkaichi.stop"), b -> {
                 send(activity, TrainingSystem.PHASE_STOP, 0);
-            }).bounds(cx - 60, this.height / 2 + 60, 120, 20).build());
+            }).bounds(cx - 60, centerY() + 60, 120, 20).build());
         }
     }
 
@@ -156,9 +160,10 @@ public class TrainingScreen extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float partial) {
         int cx = this.width / 2;
-        int cy = this.height / 2;
+        int cy = centerY();
         TenkaichiUi.panel(g, cx - 154, cy - 116, 308, 210);
-        TenkaichiUi.header(g, this.font, this.title, cx, cy - 128);
+        float scale = this.height < 300 ? 1.0f : 2.0f;
+        TenkaichiUi.header(g, this.font, this.title, cx, cy - 116 - Math.round(4 * scale), 300, scale);
         super.extractRenderState(g, mouseX, mouseY, partial);
         switch (mode) {
             case "menu" -> {

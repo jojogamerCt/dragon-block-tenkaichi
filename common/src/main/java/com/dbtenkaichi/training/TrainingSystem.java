@@ -183,6 +183,7 @@ public final class TrainingSystem {
             passiveGain(player, data, "meditation_beat", StatType.SPIRIT, base);
             addPractice(player, data, StatType.KI_CONTROL, base * 0.02);
             CombatSystem.playSound(player.level(), player, ModSounds.TRAINING_SUCCESS.get(), 0.6f, 1.0f + Math.min(10, rt.trainingStreak) * 0.05f);
+            CombatSystem.playSound(player.level(), player, net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP, 0.25f, 1.0f + Math.min(10, rt.trainingStreak) * 0.05f);
         } else {
             rt.trainingStreak = 0;
             CombatSystem.playSound(player.level(), player, ModSounds.UI_CLICK.get(), 0.6f, 0.6f);

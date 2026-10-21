@@ -44,9 +44,11 @@ la colonna "Verifica" indica come è stata provata (vedi `TESTING.md`).
 | Trasformazioni | Sistema data-driven + Super Saiyan (rabbia, cinematica, padronanza, drenaggio) | Implementata | client scriptato |
 | NPC | Maestro: meditazione, controllo Ki, sparring, schivate, insegna il Kamehameha | Implementata | codice, verifica parziale |
 | NPC | Predone Saiyan: FSM 10 stati, raffiche, cannone, schivate, seconda fase | Implementata | smoke server su entrambi i loader |
-| UI | Interfaccia completamente personalizzata: pannelli e pulsanti a 9-slice, sfondo animato, intestazioni, barre inclinate, slider | Implementata | client scriptato (screenshot) |
-| UI | HUD: ritratto del personaggio, BP, barre vita/Ki/stamina/fame con scia, armatura, icone delle tecniche, reticolo di lock-on; cuori/fame/armatura vanilla nascosti | Implementata | client scriptato (screenshot) |
-| UI | Menu personaggio (statistiche/tecniche/forme/impostazioni), creator, allenamento con il nuovo stile | Implementata | client scriptato |
+| UI | Stile "Dragon Ball x vanilla": cornici pixel art con contorno e smusso (pulsanti arancio gi, pannelli blu gi, bordi oro, stelle rosse), titoli in stile logo, cielo con stelle, Sfera del Drago a 4 stelle e nuvole a blocchi | Implementata | client scriptato (screenshot) |
+| UI | HUD: ritratto del personaggio, BP, barre segmentate vita/Ki/stamina/fame con scia e icone vanilla (cuore, fame, armatura) più icone pixel di Ki e stamina, icone delle tecniche, reticolo di lock-on | Implementata | client scriptato (screenshot) |
+| UI | Menu personaggio (U) a schermo intero in stile Genshin: icone delle schede a sinistra, personaggio ruotabile su piedistallo, pannello scorrevole a destra (stato, tecniche, forme con Sfere del Drago per livello, impostazioni); creator e allenamento nel nuovo stile | Implementata | client scriptato (screenshot) |
+| FX | Particelle pixel art (scintille, fiamme d'aura, stelle d'impatto, anelli, polvere, fulmini, scie, rocce); nucleo a cubo rotante nelle sfere Ki e a prisma quadrato nei raggi | Implementata | client scriptato (screenshot) |
+| Suono | Effetti in stile anime con finitura asciutta e leggermente retrò, suoni di menu da scouter, suoni vanilla sovrapposti (blocco sotto i piedi, scudo, esplosione, teletrasporto, esperienza) | Implementata | smoke test server + client |
 | Oggetti | Fagiolo Senzu, uova di NPC (texture 32×32 ombreggiate), tab creativa | Implementata | client scriptato (hotbar) |
 | Lingue | Inglese e italiano (258 chiavi) | Implementata | script di controllo chiavi |
 | Audio | 36 eventi, 70 suoni sintetizzati originali con sintesi stratificata (filtri risonanti, FM, supersaw, crepitii granulari, riverbero a convoluzione, voce con formanti per l'urlo, tuoni, boati) | Implementata | generazione e analisi spettrale verificate; ascolto non verificabile dall'autore |

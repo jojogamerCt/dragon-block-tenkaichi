@@ -82,7 +82,14 @@ public final class ClientState {
             }
         }
         if (entity instanceof Player player && player.isLocalPlayer()) {
+            boolean wasPreviewing = visual.previewing;
             visual.previewing = preview != null && previewRace != null;
+            if (wasPreviewing && !visual.previewing) {
+                PlayerData data = com.dbtenkaichi.platform.Services.PLATFORM.playerData(player);
+                visual.race = data.race();
+                visual.appearance = data.appearance().copy();
+                visual.created = data.isCreated();
+            }
             if (preview != null && previewRace != null) {
                 visual.appearance = preview;
                 visual.race = previewRace;

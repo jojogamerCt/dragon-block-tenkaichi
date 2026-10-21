@@ -218,10 +218,34 @@
       "dbtenkaichi:ui/click_1"
     ]
   },
+  "ui.tab": {
+    "sounds": [
+      "dbtenkaichi:ui/tab_1"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.ui.tab"
+  },
+  "ui.open": {
+    "sounds": [
+      "dbtenkaichi:ui/open_1"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.ui.open"
+  },
   "ui.confirm": {
     "sounds": [
       "dbtenkaichi:ui/confirm_1"
     ]
+  },
+  "ui.upgrade": {
+    "sounds": [
+      "dbtenkaichi:ui/upgrade_1"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.ui.upgrade"
+  },
+  "ui.deny": {
+    "sounds": [
+      "dbtenkaichi:ui/deny_1"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.ui.deny"
   },
   "training.beat": {
     "sounds": [

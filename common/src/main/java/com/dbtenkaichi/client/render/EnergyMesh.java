@@ -36,7 +36,11 @@ public final class EnergyMesh {
                 float band1 = 0.85f + 0.15f * (float) Math.sin(t1 * length * 1.1f - age * 0.9f);
                 float taper0 = Math.min(1.0f, 0.55f + t0 * 3.0f);
                 float taper1 = Math.min(1.0f, 0.55f + t1 * 3.0f);
-                tube(pose, buffer, d, u, v, t0 * length, t1 * length, r * wob0 * taper0, r * wob1 * taper1, color, alpha * band0, alpha * band1);
+                if (layer[2] == 0) {
+                    prism(pose, buffer, d, u, v, t0 * length, t1 * length, r * wob0 * taper0, r * wob1 * taper1, color, alpha * band0, alpha * band1, age * 0.12f);
+                } else {
+                    tube(pose, buffer, d, u, v, t0 * length, t1 * length, r * wob0 * taper0, r * wob1 * taper1, color, alpha * band0, alpha * band1);
+                }
             }
         }
         Vec3 head = d.scale(length);
@@ -52,7 +56,8 @@ public final class EnergyMesh {
 
     public static void orb(Matrix4fc pose, VertexConsumer buffer, Vec3 center, float radius, int core, int glow, Vec3 trail, float age) {
         float pulse = 1.0f + (float) Math.sin(age * 1.3f) * 0.08f;
-        sphere(pose, buffer, center, radius * 0.6f * pulse, core, 0.95f);
+        cube(pose, buffer, center, radius * 0.5f * pulse, age * 0.16f, core, 0.95f);
+        cube(pose, buffer, center, radius * 0.72f * pulse, -age * 0.11f + 0.6f, glow, 0.5f);
         sphere(pose, buffer, center, radius * 1.1f * pulse, glow, 0.45f);
         sphere(pose, buffer, center, radius * 1.7f * pulse, glow, 0.15f);
         if (trail.lengthSqr() > 1.0e-4) {
@@ -100,6 +105,40 @@ public final class EnergyMesh {
             float taper = Math.min(1.0f, 0.35f + t0 * 0.4f);
             tubeAt(pose, buffer, p0, sd, su, sv, 0.0f, (float) len, thickness * taper, thickness * taper, color, 0.9f * fade, 0.9f * fade);
             tubeAt(pose, buffer, p0, sd, su, sv, 0.0f, (float) len, thickness * taper * 2.4f, thickness * taper * 2.4f, color, 0.22f * fade, 0.22f * fade);
+        }
+    }
+
+    private static void prism(Matrix4fc pose, VertexConsumer buffer, Vec3 d, Vec3 u, Vec3 v, float from, float to, float r0, float r1, int color, float a0, float a1, float spin) {
+        for (int i = 0; i < 4; i++) {
+            double ang0 = Math.PI * 0.5 * i + spin;
+            double ang1 = Math.PI * 0.5 * (i + 1) + spin;
+            Vec3 n0 = u.scale(Math.cos(ang0)).add(v.scale(Math.sin(ang0)));
+            Vec3 n1 = u.scale(Math.cos(ang1)).add(v.scale(Math.sin(ang1)));
+            quad(pose, buffer, d.scale(from).add(n0.scale(r0)), d.scale(from).add(n1.scale(r0)), d.scale(to).add(n1.scale(r1)), d.scale(to).add(n0.scale(r1)), color, a0, a0, a1, a1);
+        }
+    }
+
+    public static void cube(Matrix4fc pose, VertexConsumer buffer, Vec3 c, float half, float spin, int color, float alpha) {
+        double cy = Math.cos(spin);
+        double sy = Math.sin(spin);
+        double tilt = 0.6154797;
+        double ct = Math.cos(tilt);
+        double st = Math.sin(tilt);
+        Vec3 ax = new Vec3(cy, 0, sy);
+        Vec3 az = new Vec3(-sy, 0, cy);
+        Vec3 ay = new Vec3(0, 1, 0);
+        Vec3 tx = ax.scale(ct).add(ay.scale(st));
+        Vec3 ty = ay.scale(ct).subtract(ax.scale(st));
+        Vec3 x = tx.scale(half);
+        Vec3 y = ty.scale(half);
+        Vec3 z = az.scale(half);
+        Vec3[] corners = new Vec3[8];
+        for (int i = 0; i < 8; i++) {
+            corners[i] = c.add(x.scale((i & 1) == 0 ? -1 : 1)).add(y.scale((i & 2) == 0 ? -1 : 1)).add(z.scale((i & 4) == 0 ? -1 : 1));
+        }
+        int[][] faces = {{0, 1, 3, 2}, {4, 6, 7, 5}, {0, 4, 5, 1}, {2, 3, 7, 6}, {0, 2, 6, 4}, {1, 5, 7, 3}};
+        for (int[] f : faces) {
+            quad(pose, buffer, corners[f[0]], corners[f[1]], corners[f[2]], corners[f[3]], color, alpha, alpha, alpha, alpha);
         }
     }
 

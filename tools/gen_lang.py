@@ -121,6 +121,10 @@ SOUNDS = {
     "transform.rumble": ("The ground rumbles", "Il terreno trema"),
     "ui.click": ("Click", "Clic"),
     "ui.confirm": ("Confirm", "Conferma"),
+    "ui.open": ("Scouter boots up", "Lo scouter si accende"),
+    "ui.tab": ("Scouter blip", "Bip dello scouter"),
+    "ui.upgrade": ("Power increased", "Potenza aumentata"),
+    "ui.deny": ("Not enough power", "Potenza insufficiente"),
     "training.beat": ("Training beat", "Battito dell'allenamento"),
     "training.success": ("Training success", "Allenamento riuscito"),
     "voice.grunt": ("Fighter grunts", "Grido del combattente"),
@@ -347,6 +351,21 @@ def build():
     add("training.dbtenkaichi.learn", "Learn %s", "Impara %s")
     add("training.dbtenkaichi.learned", "%s already learned", "%s già appresa")
     add("training.dbtenkaichi.stop", "Stop", "Interrompi")
+    add("command.dbtenkaichi.landmarks_rebuilt", "Rebuilt %s landmarks and refreshed their safe zones.", "Ricostruiti %s luoghi iconici e aggiornate le loro zone sicure.")
+    for k, (e, i) in {"attributes": ("Attributes", "Attributi"), "traits": ("Racial traits", "Tratti razziali"), "equipped": ("Equipped techniques", "Tecniche equipaggiate"),
+                      "known": ("Known techniques", "Tecniche conosciute"), "learn": ("Learn new techniques", "Impara nuove tecniche"), "forms": ("Transformations", "Trasformazioni"),
+                      "settings": ("Game settings", "Impostazioni di gioco"), "profile": ("Profile", "Profilo")}.items():
+        add("screen.dbtenkaichi.character.section." + k, e, i)
+    add("screen.dbtenkaichi.character.level", "Lv. %s", "Liv. %s")
+    add("screen.dbtenkaichi.character.tier", "Tier %s", "Livello %s")
+    add("screen.dbtenkaichi.character.multiplier", "x%s power", "potenza x%s")
+    add("screen.dbtenkaichi.character.mastery", "Mastery %s%%", "Padronanza %s%%")
+    add("screen.dbtenkaichi.character.selected", "Selected: %s · Ki %s", "Selezionata: %s · Ki %s")
+    add("screen.dbtenkaichi.character.none_selected", "Pick a technique below, then click a slot.", "Scegli una tecnica qui sotto, poi clicca uno slot.")
+    add("screen.dbtenkaichi.character.all_learned", "You know every technique available to you.", "Conosci tutte le tecniche disponibili.")
+    add("screen.dbtenkaichi.character.drag_hint", "Drag to rotate · Scroll to zoom", "Trascina per ruotare · Rotella per lo zoom")
+    add("screen.dbtenkaichi.character.close", "Close", "Chiudi")
+    add("screen.dbtenkaichi.character.height", "Height %s cm", "Altezza %s cm")
     return en, it
 
 

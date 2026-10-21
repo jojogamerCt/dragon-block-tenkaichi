@@ -16,6 +16,7 @@ import com.dbtenkaichi.training.TrainingSystem;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -242,6 +243,7 @@ public final class CombatSystem {
             knockback(attacker, push.scale(-1).add(0, 0.1, 0));
             fx(target, CombatFxKind.MELEE_CLASH, attacker, target, hitPos, 1.0f);
             playSound(level, target, ModSounds.MELEE_CLASH.get(), 1.0f, 0.9f + level.getRandom().nextFloat() * 0.2f);
+            playSound(level, target, SoundEvents.PLAYER_ATTACK_CRIT, 0.6f, 0.8f);
             defRt.lastCombat = now;
             if (attRt != null) {
                 attRt.lastCombat = now;
@@ -262,6 +264,7 @@ public final class CombatSystem {
             guard = DamageMath.GuardState.NONE;
             fx(target, CombatFxKind.GUARD_BREAK, attacker, target, hitPos, 1.2f);
             playSound(level, target, ModSounds.GUARD_BREAK.get(), 1.0f, 1.0f);
+            playSound(level, target, SoundEvents.SHIELD_BREAK.value(), 0.7f, 0.9f);
         } else if (guard == DamageMath.GuardState.GUARD && target instanceof ServerPlayer defender) {
             PlayerData data = PlayerManager.data(defender);
             double cost = gp.guardStaminaPerHit * (move.heavy ? 2.0 : 1.0) * mult;
@@ -273,6 +276,7 @@ public final class CombatSystem {
                 guard = DamageMath.GuardState.NONE;
                 fx(target, CombatFxKind.GUARD_BREAK, attacker, target, hitPos, 1.2f);
                 playSound(level, target, ModSounds.GUARD_BREAK.get(), 1.0f, 0.9f);
+                playSound(level, target, SoundEvents.SHIELD_BREAK.value(), 0.7f, 0.85f);
             }
         }
 
@@ -287,6 +291,7 @@ public final class CombatSystem {
             anim(target, AnimClip.GUARD_IMPACT, 6, 1);
             fx(target, CombatFxKind.PERFECT_GUARD, attacker, target, hitPos, 1.0f);
             playSound(level, target, ModSounds.PERFECT_GUARD.get(), 1.0f, 1.2f);
+            playSound(level, target, SoundEvents.SHIELD_BLOCK.value(), 0.6f, 1.4f);
             knockback(attacker, attacker.position().subtract(target.position()).multiply(1, 0, 1).normalize().scale(0.45));
             if (target instanceof ServerPlayer defender) {
                 TrainingSystem.passiveGain(defender, PlayerManager.data(defender), "perfect_guard", StatType.MARTIAL_ARTS, 1.5);
@@ -349,6 +354,10 @@ public final class CombatSystem {
                 : move.heavy ? ModSounds.PUNCH_HEAVY.get()
                 : (move == MeleeMove.KNEE || move == MeleeMove.ROUNDHOUSE) ? ModSounds.KICK.get() : ModSounds.PUNCH_LIGHT.get();
         playSound(level, target, sound, move.heavy ? 1.0f : 0.8f, 0.85f + level.getRandom().nextFloat() * 0.3f);
+        SoundEvent layer = guard == DamageMath.GuardState.GUARD ? SoundEvents.SHIELD_BLOCK.value()
+                : move.heavy ? SoundEvents.PLAYER_ATTACK_STRONG
+                : (move == MeleeMove.KNEE || move == MeleeMove.ROUNDHOUSE) ? SoundEvents.PLAYER_ATTACK_KNOCKBACK : SoundEvents.PLAYER_ATTACK_WEAK;
+        playSound(level, target, layer, move.heavy ? 0.55f : 0.4f, 0.9f + level.getRandom().nextFloat() * 0.2f);
         if (guard == DamageMath.GuardState.GUARD) {
             anim(target, AnimClip.GUARD_IMPACT, 6, 0);
         } else {
@@ -470,6 +479,7 @@ public final class CombatSystem {
         anim(player, clip, clip.defaultDuration, 0);
         fx(player, CombatFxKind.DODGE, player, player, player.position().add(0, player.getBbHeight() * 0.5, 0), 1.0f);
         playSound(level, player, ModSounds.DODGE.get(), 0.7f, 1.1f);
+        playGround(level, player, 0.6f, false);
         TrainingSystem.passiveGain(player, data, "dodge", StatType.AGILITY, 0.2);
         return true;
     }
@@ -499,6 +509,7 @@ public final class CombatSystem {
         fx(player, CombatFxKind.VANISH, player, target, from, 1.0f);
         fx(player, CombatFxKind.VANISH, player, target, behind.add(0, player.getBbHeight() * 0.5, 0), 1.0f);
         playSound(level, player, ModSounds.VANISH.get(), 1.0f, 1.0f);
+        playSound(level, player, SoundEvents.ENDERMAN_TELEPORT, 0.22f, 1.7f);
         TrainingSystem.passiveGain(player, data, "vanish", StatType.SPEED, 0.4);
         return true;
     }
@@ -529,6 +540,7 @@ public final class CombatSystem {
         anim(player, AnimClip.DASH, 8, direction);
         fx(player, CombatFxKind.DASH, player, player, player.position().add(0, player.getBbHeight() * 0.5, 0), 1.0f);
         playSound(player.level(), player, ModSounds.DASH.get(), 0.8f, 1.0f);
+        playGround(player.level(), player, 0.7f, false);
         TrainingSystem.passiveGain(player, data, "dash", StatType.SPEED, 0.25);
         return true;
     }
@@ -541,6 +553,7 @@ public final class CombatSystem {
             anim(entity, AnimClip.KNOCKDOWN, 24, 0);
             fx(entity, CombatFxKind.SHOCKWAVE, entity, entity, entity.position(), 1.2f);
             playSound((ServerLevel) entity.level(), entity, ModSounds.LAND.get(), 1.0f, 0.7f);
+            playGround((ServerLevel) entity.level(), entity, 1.0f, true);
         }
     }
 
@@ -554,5 +567,20 @@ public final class CombatSystem {
 
     public static void playSound(ServerLevel level, Entity at, SoundEvent sound, float volume, float pitch) {
         level.playSound(null, at.getX(), at.getY() + at.getBbHeight() * 0.5, at.getZ(), sound, SoundSource.PLAYERS, volume, pitch);
+    }
+
+    public static void playGround(ServerLevel level, Entity at, float volume, boolean fall) {
+        net.minecraft.core.BlockPos pos = at.blockPosition().below();
+        net.minecraft.world.level.block.state.BlockState state = level.getBlockState(pos);
+        if (state.isAir()) {
+            pos = pos.below();
+            state = level.getBlockState(pos);
+        }
+        if (state.isAir()) {
+            return;
+        }
+        net.minecraft.world.level.block.SoundType type = state.getSoundType();
+        SoundEvent sound = fall ? type.getFallSound() : type.getStepSound();
+        level.playSound(null, at.getX(), at.getY(), at.getZ(), sound, SoundSource.PLAYERS, type.getVolume() * volume, type.getPitch() * (fall ? 0.75f : 0.9f));
     }
 }

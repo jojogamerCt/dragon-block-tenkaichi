@@ -189,6 +189,11 @@ public final class MarketingCapture {
             mc.gui.setScreen(new com.dbtenkaichi.client.screen.CharacterScreen(2));
         });
         at(t + 6, mc -> shot(mc, "menu_forms"));
+        at(t + 7, mc -> mc.gui.setScreen(new com.dbtenkaichi.client.screen.CharacterScreen(0)));
+        at(t + 12, mc -> shot(mc, "menu_status"));
+        at(t + 13, mc -> mc.gui.setScreen(new com.dbtenkaichi.client.screen.CharacterScreen(1)));
+        at(t + 18, mc -> shot(mc, "menu_techniques"));
+        t += 12;
         at(t + 8, mc -> {
             net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
             StringBuilder ids = new StringBuilder();

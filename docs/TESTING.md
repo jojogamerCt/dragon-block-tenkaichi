@@ -50,14 +50,15 @@ Preparazione: copiare il mondo del server di test in `runs/client/saves/dbt_test
 ./scripts/gw.sh :neoforge:runClient -PdbtSmoke
 ```
 
-Il client entra nel mondo con Quick Play ed esegue `ClientSmokeTest`, ridotto ai controlli necessari:
-creazione Saiyan, carica del Ki con aura, volo, trasformazione Super Saiyan, NPC, Kamehameha e Beam Clash,
-combo, menu personaggio, Kaioken, trial del Ki sacro, tour dei luoghi iconici, Final Flash, cratere del
-Big Bang Attack, capelli Super Saiyan 2 per gli stili canonici e aura sopra l'acqua; salva gli screenshot in
+Il client entra nel mondo con Quick Play ed esegue `ClientSmokeTest`, ridotto alle novità della 0.3.0:
+editor del personaggio, HUD con icone vanilla, aura con particelle pixel art, le quattro schede del menu
+personaggio a schermo intero (anche dopo lo scorrimento), menu di allenamento, sfera Ki, Kamehameha e colpi in
+volo; controlla che tutti gli eventi sonori della mod siano risolti dal client. Salva gli screenshot in
 `runs/client/screenshots/dbt_*.png` e chiude il gioco.
 
-Lo smoke test del server verifica anche zone sicure (esplosioni e spawn bloccati), cratere, limiti
-delle esplosioni e la ricostruzione/migrazione dei luoghi iconici.
+Lo smoke test del server verifica la registrazione di tutti i 40 eventi sonori (compresi i quattro nuovi suoni
+da scouter) e i suoni vanilla sovrapposti: passi e cadute sul blocco sotto i piedi (saltati a mezz'aria),
+colpi corpo a corpo dell'IA, raggio ed esplosione.
 
 ## 5. Verificato visivamente (dagli screenshot)
 

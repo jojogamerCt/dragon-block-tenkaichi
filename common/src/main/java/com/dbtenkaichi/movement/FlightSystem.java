@@ -140,6 +140,7 @@ public final class FlightSystem {
                 rt.lastSonicBoom = now;
                 CombatSystem.fx(player, CombatFxKind.SONIC_BOOM, player, player, pos.add(0, player.getBbHeight() * 0.5, 0), 1.0f);
                 CombatSystem.playSound(player.level(), player, ModSounds.SONIC_BOOM.get(), 1.0f, 1.0f);
+                CombatSystem.playSound(player.level(), player, net.minecraft.sounds.SoundEvents.WIND_CHARGE_BURST.value(), 0.7f, 0.7f);
             }
             if (now % 40 == 0 && moved > 0.2) {
                 TrainingSystem.passiveGain(player, data, "flight", StatType.SPEED, rt.fastFlight ? 0.25 : 0.1);
@@ -166,6 +167,7 @@ public final class FlightSystem {
         CombatSystem.anim(player, AnimClip.LAND, 8, 0);
         CombatSystem.fx(player, CombatFxKind.LAND, player, player, player.position(), strength);
         CombatSystem.playSound(level, player, ModSounds.LAND.get(), Math.min(1.0f, 0.4f + strength * 0.3f), 1.0f);
+        CombatSystem.playGround(level, player, Math.min(1.2f, 0.6f + strength * 0.3f), true);
         double radius = 1.5 + strength;
         for (LivingEntity other : level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(radius, 1.0, radius), e -> e != player && e.isAlive())) {
             if (!CombatSystem.canHarm(player, other)) {

@@ -172,6 +172,7 @@ public final class PlayerManager {
         data.runtime().dataDirty = true;
         player.sendSystemMessage(Component.translatable("message.dbtenkaichi.learned", Component.translatable(unlock.technique().translationKey())));
         com.dbtenkaichi.combat.CombatSystem.playSound(player.level(), player, com.dbtenkaichi.registry.ModSounds.UI_CONFIRM.get(), 1.0f, 1.0f);
+        com.dbtenkaichi.combat.CombatSystem.playSound(player.level(), player, net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, 0.35f, 1.2f);
     }
 
     public static void formTrial(ServerPlayer player, PlayerData data, int index) {
@@ -213,6 +214,7 @@ public final class PlayerManager {
         data.runtime().dataDirty = true;
         player.sendSystemMessage(Component.translatable("message.dbtenkaichi.learned", Component.translatable("technique.dbtenkaichi.kaioken")));
         com.dbtenkaichi.combat.CombatSystem.playSound(player.level(), player, com.dbtenkaichi.registry.ModSounds.UI_CONFIRM.get(), 1.0f, 1.0f);
+        com.dbtenkaichi.combat.CombatSystem.playSound(player.level(), player, net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, 0.35f, 1.2f);
     }
 
     private static void tickPlayer(ServerPlayer player) {
@@ -465,10 +467,13 @@ public final class PlayerManager {
         }
         long cost = ProgressionMath.statUpgradeCost(level, affinity, cfg);
         if (data.trainingPoints() < cost) {
+            com.dbtenkaichi.combat.CombatSystem.playSound(player.level(), player, com.dbtenkaichi.registry.ModSounds.UI_DENY.get(), 0.6f, 1.0f);
             return false;
         }
         data.setTrainingPoints(data.trainingPoints() - cost);
         data.stats().add(type, 1);
+        com.dbtenkaichi.combat.CombatSystem.playSound(player.level(), player, com.dbtenkaichi.registry.ModSounds.UI_UPGRADE.get(), 0.7f, 1.0f);
+        com.dbtenkaichi.combat.CombatSystem.playSound(player.level(), player, net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP, 0.3f, 0.9f + Math.min(0.6f, level * 0.004f));
         refreshCaches(player, data);
         applyAttributes(player, data);
         data.runtime().dataDirty = true;
