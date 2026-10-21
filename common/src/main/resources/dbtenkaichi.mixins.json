@@ -19,6 +19,7 @@
     "client.RenderPipelinesAccessor",
     "client.RenderTypeInvoker",
     "client.MinecraftMixin",
+    "client.MouseHandlerMixin",
     "client.PlayerModelMixin"
   ],
   "server": [],

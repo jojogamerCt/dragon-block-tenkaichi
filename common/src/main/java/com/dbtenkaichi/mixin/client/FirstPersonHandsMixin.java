@@ -30,6 +30,10 @@ public abstract class FirstPersonHandsMixin {
                                         float attack, ItemStack itemStack, float inverseArmHeight, PoseStack poseStack, SubmitNodeCollector collector, int lightCoords,
                                         CallbackInfo ci) {
         try {
+            if (com.dbtenkaichi.client.cinematic.CinematicDirector.localActive()) {
+                ci.cancel();
+                return;
+            }
             if (state.isScoping || !itemStack.isEmpty() || !FirstPersonCombat.active()) {
                 return;
             }

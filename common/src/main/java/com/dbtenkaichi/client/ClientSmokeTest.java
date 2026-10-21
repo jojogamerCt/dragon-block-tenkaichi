@@ -77,10 +77,6 @@ public final class ClientSmokeTest {
         String name = mc.player.getName().getString();
         PlayerData data = Services.PLATFORM.playerData(mc.player);
         switch (tick) {
-            case 30 -> {
-                LOG.add("creator open: " + (mc.gui.screen() instanceof com.dbtenkaichi.client.screen.CharacterCreatorScreen));
-                shot(mc, "01_creator_no_voice");
-            }
             case 40 -> {
                 Appearance a = Appearance.defaultsFor(Race.SAIYAN);
                 a.hairStyle = HairStyle.GOKU.ordinal();
@@ -88,8 +84,48 @@ public final class ClientSmokeTest {
                         a.eyebrowStyle, a.hairStyle, a.hairColor, a.expression, a.auraColor, a.outfit, a.outfitPrimary, a.outfitSecondary, a.featureColor, true, false));
                 mc.gui.setScreen(null);
             }
-            case 70 -> {
-                LOG.add("character created: " + data.isCreated() + " race=" + data.race().id() + " hair=" + data.appearance().hairStyle + " saved has voice=" + data.appearance().save().contains("voice"));
+            case 60 -> {
+                command(mc, "tenkaichi setstat " + name + " all 60");
+                command(mc, "tenkaichi unlockform " + name + " dbtenkaichi:super_saiyan");
+                command(mc, "tenkaichi restore " + name);
+                mc.options.setCameraType(net.minecraft.client.CameraType.FIRST_PERSON);
+            }
+            case 70 -> shot(mc, "01_first_person_before");
+            case 72 -> action(ActionType.TRANSFORM_UP, com.dbtenkaichi.form.TransformationSystem.CINEMATIC_AUTO);
+            case 90 -> {
+                float before = mc.player.getYRot();
+                boolean turned = false;
+                try {
+                    var dx = net.minecraft.client.MouseHandler.class.getDeclaredField("accumulatedDX");
+                    dx.setAccessible(true);
+                    dx.setDouble(mc.mouseHandler, 400.0);
+                    var turn = net.minecraft.client.MouseHandler.class.getDeclaredMethod("turnPlayer", double.class);
+                    turn.setAccessible(true);
+                    turn.invoke(mc.mouseHandler, 0.05);
+                    turned = true;
+                } catch (ReflectiveOperationException e) {
+                    LOG.add("reflection failed: " + e);
+                }
+                LOG.add("cinematic active: " + com.dbtenkaichi.client.cinematic.CinematicDirector.localActive() + " mouse turn attempted: " + turned + " yaw before " + before + " after " + mc.player.getYRot());
+            }
+            case 96 -> shot(mc, "02_cutscene_first_person");
+            case 130 -> shot(mc, "03_cutscene_later");
+            case 400 -> {
+                float before = mc.player.getYRot();
+                try {
+                    var dx = net.minecraft.client.MouseHandler.class.getDeclaredField("accumulatedDX");
+                    dx.setAccessible(true);
+                    dx.setDouble(mc.mouseHandler, 400.0);
+                    var turn = net.minecraft.client.MouseHandler.class.getDeclaredMethod("turnPlayer", double.class);
+                    turn.setAccessible(true);
+                    turn.invoke(mc.mouseHandler, 0.05);
+                } catch (ReflectiveOperationException e) {
+                    LOG.add("reflection failed: " + e);
+                }
+                LOG.add("after cutscene active: " + com.dbtenkaichi.client.cinematic.CinematicDirector.localActive() + " form " + data.form() + " yaw before " + before + " after " + mc.player.getYRot());
+                shot(mc, "04_after_cutscene_hand");
+            }
+            case 410 -> {
                 finished = true;
                 Tenkaichi.LOG.info("[DBT-CLIENT] RESULT {}", LOG);
                 mc.stop();

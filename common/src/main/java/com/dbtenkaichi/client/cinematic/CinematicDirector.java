@@ -41,6 +41,11 @@ public final class CinematicDirector {
         return visual != null && visual.cinematicFull && visual.cinematicTicks > 0 && ClientState.clientTicks - visual.cinematicStart < visual.cinematicTicks;
     }
 
+    public static boolean localActive() {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        return mc.player != null && active(ClientState.existing(mc.player.getId()));
+    }
+
     public static float progress(EntityVisual visual, float partial) {
         return Mth.clamp((ClientState.clientTicks - visual.cinematicStart + partial) / Math.max(1, visual.cinematicTicks), 0.0f, 1.0f);
     }
