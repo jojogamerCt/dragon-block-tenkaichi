@@ -27,7 +27,7 @@ public abstract class AvatarRendererMixin {
         try {
             EntityVisual visual = TenkaichiLayers.visual(state);
             if (visual != null && !visual.appearance.useOwnSkin) {
-                cir.setReturnValue(CustomSkins.textureFor(visual.race, visual.appearance, visual.eyeColor(), visual.hairColor()));
+                cir.setReturnValue(visual.skinTexture());
             }
         } catch (RuntimeException e) {
             RenderGuard.report("skin", e);
@@ -65,7 +65,7 @@ public abstract class AvatarRendererMixin {
         try {
             EntityVisual visual = dbtenkaichi$localCustomVisual();
             if (visual != null) {
-                return CustomSkins.textureFor(visual.race, visual.appearance, visual.eyeColor(), visual.hairColor());
+                return visual.skinTexture();
             }
         } catch (RuntimeException e) {
             RenderGuard.report("hand_skin", e);
@@ -74,6 +74,32 @@ public abstract class AvatarRendererMixin {
     }
 
     private static net.minecraft.client.model.geom.ModelPart dbtenkaichi$outfitModel;
+    private static final java.util.Map<com.dbtenkaichi.client.render.MajinBody, net.minecraft.client.model.geom.ModelPart> DBTENKAICHI_MAJIN_ARMS = new java.util.EnumMap<>(com.dbtenkaichi.client.render.MajinBody.class);
+
+    @Inject(method = "renderHand", at = @At("HEAD"), cancellable = true)
+    private void dbtenkaichi$majinHand(PoseStack poseStack, net.minecraft.client.renderer.SubmitNodeCollector collector, int light, Identifier texture,
+                                       net.minecraft.client.model.geom.ModelPart arm, boolean sleeve, CallbackInfo ci) {
+        try {
+            EntityVisual visual = dbtenkaichi$localCustomVisual();
+            com.dbtenkaichi.client.render.MajinBody body = visual == null ? null : visual.majinBody();
+            if (body == null) {
+                return;
+            }
+            Minecraft mc = Minecraft.getInstance();
+            net.minecraft.client.model.geom.ModelPart root = DBTENKAICHI_MAJIN_ARMS.computeIfAbsent(body, b -> mc.getEntityModels().bakeLayer(b.layer));
+            boolean right = arm.x < 0.0f;
+            arm.resetPose();
+            arm.zRot = right ? 0.1f : -0.1f;
+            net.minecraft.client.model.geom.ModelPart limb = root.getChild(right ? "right_arm" : "left_arm");
+            limb.loadPose(arm.storePose());
+            limb.visible = true;
+            collector.submitModelPart(limb, poseStack, net.minecraft.client.renderer.rendertype.RenderTypes.entityCutout(body.texture(visual)), light,
+                    net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, null);
+            ci.cancel();
+        } catch (RuntimeException e) {
+            RenderGuard.report("majin_hand", e);
+        }
+    }
 
     @Inject(method = "renderHand", at = @At("TAIL"))
     private void dbtenkaichi$outfitHand(PoseStack poseStack, net.minecraft.client.renderer.SubmitNodeCollector collector, int light, Identifier texture,
@@ -136,6 +162,10 @@ public abstract class AvatarRendererMixin {
     private void dbtenkaichi$build(AvatarRenderState state, PoseStack poseStack, CallbackInfo ci) {
         EntityVisual visual = TenkaichiLayers.visual(state);
         if (visual != null) {
+            if (visual.majinBody() != null) {
+                com.dbtenkaichi.client.render.MajinBody.applyScale(poseStack, visual);
+                return;
+            }
             float width = DBTENKAICHI_BUILD_WIDTH[Math.max(0, Math.min(2, visual.appearance.build))] * (visual.appearance.presentation == 1 ? 0.93f : 1.0f);
             if (width != 1.0f) {
                 poseStack.scale(width, 1.0f, width);

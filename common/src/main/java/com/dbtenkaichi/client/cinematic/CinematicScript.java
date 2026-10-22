@@ -15,6 +15,9 @@ public final class CinematicScript {
     final List<Track> flicker = new ArrayList<>();
     final List<Track> streak = new ArrayList<>();
     final List<Track> cloudRush = new ArrayList<>();
+    final List<Track> steam = new ArrayList<>();
+    final List<Track> grow = new ArrayList<>();
+    final List<Smoke> smoke = new ArrayList<>();
     final List<Backdrop> backdrops = new ArrayList<>();
     float formFrom = 1.0f;
     float revealAt = 0.6f;
@@ -39,6 +42,10 @@ public final class CinematicScript {
     public record Track(float from, float to, float a, float b) {
     }
 
+    /** A billowing cloud around the actor: {@code height} is in actor heights above the feet, {@code radius} in blocks. */
+    public record Smoke(float from, float to, int color, float height, float radius, float a, float b) {
+    }
+
     public record Backdrop(float from, float to, int color, float zoom, float centerY, float yaw) {
     }
 
@@ -50,7 +57,14 @@ public final class CinematicScript {
         SOUND_RUMBLE,
         SOUND_SCREAM,
         SOUND_BURST,
-        SOUND_POWER
+        SOUND_POWER,
+        SOUND_STEAM,
+        SOUND_LAUGH,
+        SOUND_CACKLE,
+        SOUND_GULP,
+        SOUND_STRETCH,
+        CHOCOLATE,
+        SMOKE_BURST
     }
 
     public record Event(float at, EventKind kind, float strength) {
@@ -109,6 +123,33 @@ public final class CinematicScript {
     public CinematicScript cloudRush(float from, float to, float a, float b) {
         cloudRush.add(new Track(from, to, a, b));
         return this;
+    }
+
+    /** Steam jets from the holes on the sides of a Majin's head. */
+    public CinematicScript steam(float from, float to, float a, float b) {
+        steam.add(new Track(from, to, a, b));
+        return this;
+    }
+
+    /** Multiplies the actor's size, for bodies that swell or shrink on screen. */
+    public CinematicScript grow(float from, float to, float a, float b) {
+        grow.add(new Track(from, to, a, b));
+        return this;
+    }
+
+    public CinematicScript smoke(float from, float to, int color, float height, float radius, float a, float b) {
+        smoke.add(new Smoke(from, to, color, height, radius, a, b));
+        return this;
+    }
+
+    static float sampleOr(List<Track> tracks, float t, float fallback) {
+        for (Track track : tracks) {
+            if (t >= track.from && t <= track.to) {
+                float k = track.to <= track.from ? 1.0f : (t - track.from) / (track.to - track.from);
+                return track.a + (track.b - track.a) * k;
+            }
+        }
+        return fallback;
     }
 
     public CinematicScript backdrop(float from, float to, int color, float zoom, float centerY, float yaw) {

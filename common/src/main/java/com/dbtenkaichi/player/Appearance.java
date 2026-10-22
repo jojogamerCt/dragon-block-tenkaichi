@@ -12,6 +12,7 @@ public final class Appearance {
     public static final int OUTFITS = 4;
     public static final int OUTFIT_NATURAL = 3;
     public static final int BODY_BUILDS = 3;
+    public static final int BUILD_FAT = 3;
 
     public int presentation;
     public float height = 1.0f;
@@ -40,7 +41,7 @@ public final class Appearance {
     public void sanitize(Race race, float minHeight, float maxHeight) {
         presentation = clamp(presentation, 0, PRESENTATIONS - 1);
         height = Math.max(minHeight, Math.min(maxHeight, Float.isFinite(height) ? height : 1.0f));
-        build = clamp(build, 0, BODY_BUILDS - 1);
+        build = clamp(build, 0, builds(race) - 1);
         eyeStyle = clamp(eyeStyle, 0, EYE_STYLES - 1);
         eyebrowStyle = clamp(eyebrowStyle, 0, EYEBROW_STYLES - 1);
         hairStyle = clamp(hairStyle, 0, HAIR_STYLES - 1);
@@ -103,6 +104,10 @@ public final class Appearance {
         useOwnSkin = tag.getBooleanOr("own_skin", useOwnSkin);
     }
 
+    public static int builds(Race race) {
+        return race == Race.MAJIN ? BODY_BUILDS + 1 : BODY_BUILDS;
+    }
+
     public static int defaultHair(Race race, int presentation) {
         if (presentation != 1 || !race.hasHair()) {
             return defaultsFor(race).hairStyle;
@@ -153,12 +158,13 @@ public final class Appearance {
                 a.outfitSecondary = 0x7A3010;
             }
             case MAJIN -> {
+                a.build = BUILD_FAT;
                 a.skinColor = 0xF4A0C0;
                 a.featureColor = 0xE07AA4;
                 a.eyeColor = 0x0E0E0E;
                 a.auraColor = 0xFF9ACD;
                 a.outfitPrimary = 0xF2F2F2;
-                a.outfitSecondary = 0x2A2A2A;
+                a.outfitSecondary = 0x2B2438;
             }
             case ANDROID -> {
                 a.skinColor = 0xF0CBA4;

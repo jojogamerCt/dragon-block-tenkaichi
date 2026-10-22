@@ -100,7 +100,7 @@ public class CharacterCreatorScreen extends Screen {
                     Appearance fresh = Appearance.defaultsFor(race);
                     fresh.presentation = appearance.presentation;
                     fresh.height = appearance.height;
-                    fresh.build = appearance.build;
+                    fresh.build = race == Race.MAJIN || appearance.build >= Appearance.builds(race) ? fresh.build : appearance.build;
                     appearance = fresh;
                     publishPreview();
                 }, i -> Component.translatable(races.get(i).translationKey()));
@@ -111,7 +111,7 @@ public class CharacterCreatorScreen extends Screen {
                         i -> Component.translatable("screen.dbtenkaichi.creator.presentation." + i));
                 addRenderableWidget(new HeightSlider(panelX, y, panelW, 20));
                 y += 24;
-                y = cycleRow(panelX, y, panelW, "build", () -> appearance.build, Appearance.BODY_BUILDS, i -> appearance.build = i,
+                y = cycleRow(panelX, y, panelW, "build", () -> appearance.build, Appearance.builds(race), i -> appearance.build = i,
                         i -> Component.translatable("screen.dbtenkaichi.creator.build." + i));
                 y = colorRow(panelX, y, panelW, "skin", withValue(skinTones(race), Appearance.defaultsFor(race).skinColor), () -> appearance.skinColor, c -> appearance.skinColor = c);
                 if (hasFeatureColor(race)) {
@@ -232,7 +232,7 @@ public class CharacterCreatorScreen extends Screen {
         RandomSource random = RandomSource.create();
         appearance.presentation = random.nextInt(Appearance.PRESENTATIONS);
         appearance.height = minHeight + random.nextFloat() * (maxHeight - minHeight);
-        appearance.build = random.nextInt(Appearance.BODY_BUILDS);
+        appearance.build = random.nextInt(Appearance.builds(race));
         int[] tones = skinTones(race);
         appearance.skinColor = tones[random.nextInt(tones.length)];
         if (hasFeatureColor(race)) {

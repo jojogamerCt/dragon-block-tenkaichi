@@ -95,6 +95,9 @@ public final class TenkaichiModels {
         registrar.accept(BUST, () -> bust(emptyPlayerMesh(), 0.0f));
         registrar.accept(OUTFIT, () -> LayerDefinition.create(net.minecraft.client.model.player.PlayerModel.createMesh(new net.minecraft.client.model.geom.builders.CubeDeformation(0.07f), false), 64, 64));
         registrar.accept(CAT_NOSE, TenkaichiModels::catNose);
+        for (MajinBody body : MajinBody.values()) {
+            registrar.accept(body.layer, body::createLayer);
+        }
         FEATURES.forEach((race, byTint) -> byTint.forEach((tint, location) ->
                 registrar.accept(location, () -> LayerDefinition.create(feature(race, tint), 64, 64))));
     }

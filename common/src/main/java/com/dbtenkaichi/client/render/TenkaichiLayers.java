@@ -47,7 +47,7 @@ public final class TenkaichiLayers {
     }
 
     public static List<RenderLayer<AvatarRenderState, PlayerModel>> create(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet models) {
-        return List.of(new BustLayer(parent, models), new OutfitLayer(parent, models), new TailLayer(parent, models), new FeatureLayer(parent, models), new GearLayer(parent, models), new HairLayer(parent, models),
+        return List.of(new MajinBodyLayer(parent, models), new BustLayer(parent, models), new OutfitLayer(parent, models), new TailLayer(parent, models), new FeatureLayer(parent, models), new GearLayer(parent, models), new HairLayer(parent, models),
                 new AuraLayer(parent, models));
     }
 
@@ -225,7 +225,7 @@ public final class TenkaichiLayers {
                         continue;
                     }
                     int color = switch (tint) {
-                        case SKIN -> visual.appearance.skinColor;
+                        case SKIN -> visual.skinColor();
                         case ACCENT, GEM, BODY_GEM -> visual.appearance.featureColor;
                         case HORN -> visual.race == Race.FRIEZA_RACE ? 0x2A2430 : visual.appearance.featureColor;
                         case PLATE, BODY_PLATE -> visual.race == Race.BIO_ANDROID ? carapaceColor(visual.appearance.featureColor) : plateColor(visual.appearance.skinColor);
@@ -290,6 +290,35 @@ public final class TenkaichiLayers {
         return spec[0] >= 0 || spec[3] >= 0 || spec[6] >= 0;
     }
 
+    static final class MajinBodyLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
+        private final Map<MajinBody, HairModel> models = new EnumMap<>(MajinBody.class);
+
+        MajinBodyLayer(RenderLayerParent<AvatarRenderState, PlayerModel> parent, EntityModelSet set) {
+            super(parent);
+            for (MajinBody body : MajinBody.values()) {
+                models.put(body, new HairModel(set.bakeLayer(body.layer)));
+            }
+        }
+
+        @Override
+        public void submit(PoseStack poseStack, SubmitNodeCollector collector, int light, AvatarRenderState state, float yRot, float xRot) {
+            try {
+                if (state.isInvisible) {
+                    return;
+                }
+                EntityVisual visual = visual(state);
+                MajinBody body = visual == null ? null : visual.majinBody();
+                if (body == null) {
+                    return;
+                }
+                int overlay = net.minecraft.client.renderer.entity.LivingEntityRenderer.getOverlayCoords(state, 0.0f);
+                collector.submitModel(models.get(body), state, poseStack, RenderTypes.entityCutout(body.texture(visual)), light, overlay, 0xFFFFFFFF, null, state.outlineColor);
+            } catch (RuntimeException e) {
+                RenderGuard.report("majin_body", e);
+            }
+        }
+    }
+
     static final class BustLayer extends RenderLayer<AvatarRenderState, PlayerModel> {
         private final HairModel model;
 
@@ -305,10 +334,10 @@ public final class TenkaichiLayers {
                     return;
                 }
                 EntityVisual visual = visual(state);
-                if (visual == null || visual.appearance.useOwnSkin || visual.appearance.presentation != 1) {
+                if (visual == null || visual.appearance.useOwnSkin || visual.appearance.presentation != 1 || visual.majinBody() != null) {
                     return;
                 }
-                Identifier skin = CustomSkins.textureFor(visual.race, visual.appearance, visual.eyeColor(), visual.hairColor());
+                Identifier skin = visual.skinTexture();
                 collector.submitModel(model, state, poseStack, RenderTypes.entityCutout(skin), light, OverlayTexture.NO_OVERLAY, 0xFFFFFFFF, null, state.outlineColor);
             } catch (RuntimeException e) {
                 RenderGuard.report("bust", e);
@@ -333,7 +362,7 @@ public final class TenkaichiLayers {
                     return;
                 }
                 EntityVisual visual = visual(state);
-                if (visual == null || visual.appearance.useOwnSkin) {
+                if (visual == null || visual.appearance.useOwnSkin || visual.majinBody() != null) {
                     return;
                 }
                 int[] spec = outfitSpec(state, visual);
@@ -376,7 +405,7 @@ public final class TenkaichiLayers {
                 if (visual == null) {
                     return;
                 }
-                if (visual.appearance.outfit == 1 && !visual.appearance.useOwnSkin) {
+                if (visual.appearance.outfit == 1 && !visual.appearance.useOwnSkin && visual.majinBody() == null) {
                     collector.submitModel(pads, state, poseStack, RenderTypes.entityCutout(ARMOR_PAD_TEXTURE), light, OverlayTexture.NO_OVERLAY, 0xFFEDE7D6, null, state.outlineColor);
                 }
                 if (visual.roshi) {

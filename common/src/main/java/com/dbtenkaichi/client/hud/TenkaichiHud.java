@@ -207,7 +207,7 @@ public final class TenkaichiHud {
             g.blit(RenderPipelines.GUI_TEXTURED, skin, fx, fy, 8, 8, face, face, 8, 8, 64, 64);
             g.blit(RenderPipelines.GUI_TEXTURED, skin, fx, fy, 40, 8, face, face, 8, 8, 64, 64);
         } else {
-            Identifier skin = CustomSkins.textureFor(visual.race, visual.appearance, visual.eyeColor(), visual.hairColor());
+            Identifier skin = visual.skinTexture();
             g.blit(RenderPipelines.GUI_TEXTURED, skin, fx, fy, 16, 16, face, face, 16, 16, 128, 128);
         }
         g.outline(fx - 1, fy - 1, face + 2, face + 2, 0x80000000);

@@ -117,6 +117,17 @@ public final class CinematicDirector {
         return (long) (swing * rush);
     }
 
+    /** Size multiplier from the script's grow track (1 outside it). */
+    public static float grow(EntityVisual visual, float partial) {
+        return active(visual) ? CinematicScript.sampleOr(script(visual).grow, progress(visual, partial), 1.0f) : 1.0f;
+    }
+
+    /** The actor's form height for framing: the starting form before the switch, the target form after it. */
+    private static float framingScale(EntityVisual visual, CinematicScript script, float t) {
+        FormDefinition form = t >= script.formFrom ? targetForm(visual) : visual.formDefinition();
+        return form == null ? 1.0f : form.visual.modelHeight;
+    }
+
     public static boolean revealed(EntityVisual visual) {
         return active(visual) && progress(visual, 0.0f) >= script(visual).revealAt;
     }
@@ -142,6 +153,9 @@ public final class CinematicDirector {
         float pitch = Mth.lerp(k, a.pitch(), b.pitch());
         float distance = Mth.lerp(k, a.distance(), b.distance());
         float height = Mth.lerp(k, a.height(), b.height());
+        float framing = framingScale(visual, script, t);
+        height *= framing;
+        distance *= (float) Math.sqrt(framing);
         float bodyYaw = entity instanceof LivingEntity living ? Mth.rotLerp(partial, living.yBodyRotO, living.yBodyRot) : entity.getYRot(partial);
         Vec3 base = entity.getPosition(partial);
         Vec3 target = base.add(0, entity.getBbHeight() * height, 0);
@@ -150,6 +164,10 @@ public final class CinematicDirector {
         double pitchRad = Math.toRadians(pitch);
         Vec3 forward = new Vec3(-Math.sin(rad), 0, Math.cos(rad));
         Vec3 desired = target.add(forward.scale(distance * Math.cos(pitchRad))).add(0, distance * Math.sin(pitchRad), 0);
+        double floor = base.y + 0.35;
+        if (desired.y < floor) {
+            desired = new Vec3(desired.x, floor, desired.z);
+        }
         HitResult hit = entity.level().clip(new ClipContext(target, desired, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, entity));
         Vec3 position = desired;
         if (hit.getType() != HitResult.Type.MISS) {
@@ -157,7 +175,11 @@ public final class CinematicDirector {
             double allowed = Math.max(0.6, hit.getLocation().distanceTo(target) - 0.3);
             position = target.add(dir.normalize().scale(allowed));
         }
-        return new CameraPose(position, yaw + 180.0f, pitch);
+        Vec3 look = target.subtract(position);
+        double flat = Math.sqrt(look.x * look.x + look.z * look.z);
+        float lookYaw = (float) Math.toDegrees(Math.atan2(-look.x, look.z));
+        float lookPitch = (float) -Math.toDegrees(Math.atan2(look.y, Math.max(1.0e-4, flat)));
+        return new CameraPose(position, lookYaw, lookPitch);
     }
 
     public static void tick(Minecraft mc) {
@@ -195,6 +217,16 @@ public final class CinematicDirector {
             float rocks = CinematicScript.sample(script.rocks, now);
             if (rocks > 0.0f) {
                 spawnRocks(level, entity, rocks);
+            }
+            float steam = CinematicScript.sample(script.steam, now);
+            if (steam > 0.0f) {
+                steamJets(level, entity, visual, steam);
+            }
+            for (CinematicScript.Smoke smoke : script.smoke) {
+                if (now >= smoke.from() && now <= smoke.to()) {
+                    float k = smoke.to() <= smoke.from() ? 1.0f : (now - smoke.from()) / (smoke.to() - smoke.from());
+                    billow(level, entity, visual, smoke, smoke.a() + (smoke.b() - smoke.a()) * k);
+                }
             }
             if (entity == mc.player) {
                 float shake = CinematicScript.sample(script.shake, now);
@@ -237,6 +269,13 @@ public final class CinematicDirector {
             case SOUND_SCREAM -> sound(level, entity, ModSounds.TRANSFORM_SCREAM.get(), 1.6f * event.strength(), 1.0f);
             case SOUND_BURST -> sound(level, entity, ModSounds.AURA_BURST.get(), 2.0f * event.strength(), 0.85f);
             case SOUND_POWER -> sound(level, entity, ModSounds.TRANSFORM.get(), 1.4f * event.strength(), 1.0f);
+            case SOUND_STEAM -> sound(level, entity, ModSounds.TRANSFORM_STEAM.get(), 1.5f * event.strength(), 0.9f + random.nextFloat() * 0.2f);
+            case SOUND_LAUGH -> sound(level, entity, ModSounds.TRANSFORM_LAUGH.get(), 1.6f * event.strength(), 0.92f);
+            case SOUND_CACKLE -> sound(level, entity, ModSounds.TRANSFORM_LAUGH.get(), 1.6f * event.strength(), 1.5f);
+            case SOUND_GULP -> sound(level, entity, ModSounds.TRANSFORM_GULP.get(), 1.4f * event.strength(), 1.0f);
+            case SOUND_STRETCH -> sound(level, entity, ModSounds.TRANSFORM_STRETCH.get(), 1.4f * event.strength(), 0.85f + random.nextFloat() * 0.3f);
+            case CHOCOLATE -> chocolate(level, entity, visual, event.strength());
+            case SMOKE_BURST -> smokeBurst(level, entity, visual, event.strength());
         }
     }
 
@@ -312,6 +351,87 @@ public final class CinematicDirector {
             CombatFxHandler.spawn(ModParticles.LIGHTNING, 0xFFF4B0, entity.getX() + (random.nextDouble() - 0.5) * 2, entity.getY() + random.nextDouble() * 2.5,
                     entity.getZ() + (random.nextDouble() - 0.5) * 2, 0, 0, 0, 1.4f);
         }
+    }
+
+    private static float actorHeight(Entity entity, EntityVisual visual) {
+        return entity.getBbHeight() * visual.modelHeight() * grow(visual, 0.0f);
+    }
+
+    private static float bodyYaw(Entity entity) {
+        return entity instanceof LivingEntity living ? living.yBodyRot : entity.getYRot();
+    }
+
+    /** Jets of steam blowing sideways out of the three holes on each side of the head. */
+    private static void steamJets(ClientLevel level, Entity entity, EntityVisual visual, float rate) {
+        RandomSource random = level.getRandom();
+        double yaw = Math.toRadians(bodyYaw(entity));
+        double sideX = Math.cos(yaw);
+        double sideZ = Math.sin(yaw);
+        float height = actorHeight(entity, visual);
+        com.dbtenkaichi.client.render.MajinBody body = visual.majinBody();
+        float head = 0.27f * visual.modelWidth() * (body == null ? 1.0f : body.headScale) * grow(visual, 0.0f);
+        int n = Math.max(1, Math.round(rate * 4 * com.dbtenkaichi.config.ConfigManager.client().quality().particleBudget));
+        for (int i = 0; i < n; i++) {
+            int side = random.nextBoolean() ? 1 : -1;
+            double y = entity.getY() + height * (0.86 + random.nextDouble() * 0.06);
+            double speed = (0.16 + random.nextDouble() * 0.12) * (0.6 + 0.4 * rate);
+            CombatFxHandler.spawn(ModParticles.DUST_PUFF, random.nextFloat() < 0.3f ? 0xFFFFFF : 0xE8E6EC,
+                    entity.getX() + sideX * side * head, y, entity.getZ() + sideZ * side * head,
+                    sideX * side * speed, 0.05 + random.nextDouble() * 0.05, sideZ * side * speed, 0.5f + rate * (0.35f + random.nextFloat() * 0.35f));
+        }
+    }
+
+    /** Thick, swirling smoke that hides the actor or gathers into a cloud overhead. */
+    private static void billow(ClientLevel level, Entity entity, EntityVisual visual, CinematicScript.Smoke smoke, float density) {
+        if (density <= 0.0f) {
+            return;
+        }
+        RandomSource random = level.getRandom();
+        float height = actorHeight(entity, visual);
+        double cy = entity.getY() + height * smoke.height();
+        int n = Math.max(1, Math.round(density * 10 * com.dbtenkaichi.config.ConfigManager.client().quality().particleBudget));
+        for (int i = 0; i < n; i++) {
+            double a = random.nextDouble() * Math.PI * 2;
+            double r = smoke.radius() * Math.sqrt(random.nextDouble());
+            double y = cy + (random.nextDouble() - 0.5) * smoke.radius() * 1.3;
+            double swirl = 0.05 + random.nextDouble() * 0.05;
+            float tone = random.nextFloat();
+            int shade = tone < 0.35f ? EntityVisual.mix(smoke.color(), 0x6A6070, 0.3f) : EntityVisual.mix(smoke.color(), 0xFFFFFF, (tone - 0.35f) * 0.4f);
+            CombatFxHandler.spawn(ModParticles.DUST_PUFF, shade, entity.getX() + Math.cos(a) * r, y, entity.getZ() + Math.sin(a) * r,
+                    -Math.sin(a) * swirl, 0.02 + random.nextDouble() * 0.03, Math.cos(a) * swirl, (1.4f + random.nextFloat() * 1.2f) * (0.7f + 0.3f * smoke.radius()));
+        }
+    }
+
+    /** A sudden ring of smoke bursting out of the body. */
+    private static void smokeBurst(ClientLevel level, Entity entity, EntityVisual visual, float strength) {
+        RandomSource random = level.getRandom();
+        float height = actorHeight(entity, visual);
+        int color = formColor(visual);
+        for (int i = 0; i < 40 * strength; i++) {
+            double a = random.nextDouble() * Math.PI * 2;
+            double up = random.nextDouble() - 0.3;
+            double speed = 0.6 + random.nextDouble() * 0.45;
+            int shade = EntityVisual.mix(color, 0xFFFFFF, 0.25f + random.nextFloat() * 0.45f);
+            CombatFxHandler.spawn(ModParticles.DUST_PUFF, shade, entity.getX(), entity.getY() + height * (0.3 + random.nextDouble() * 0.5), entity.getZ(),
+                    Math.cos(a) * speed, up * speed, Math.sin(a) * speed, 1.8f + random.nextFloat() * 1.4f);
+        }
+        CombatFxHandler.spawn(ModParticles.SHOCK_RING, color, entity.getX(), entity.getY() + 0.4, entity.getZ(), 0, 0, 0, 5.0f * strength);
+    }
+
+    /** Chocolate pieces flying in from the front into the actor's mouth. */
+    private static void chocolate(ClientLevel level, Entity entity, EntityVisual visual, float strength) {
+        RandomSource random = level.getRandom();
+        double yaw = Math.toRadians(bodyYaw(entity));
+        Vec3 forward = new Vec3(-Math.sin(yaw), 0, Math.cos(yaw));
+        Vec3 mouth = entity.position().add(0, actorHeight(entity, visual) * 0.82, 0).add(forward.scale(0.25));
+        for (int i = 0; i < 26 * strength; i++) {
+            Vec3 from = mouth.add(forward.scale(2.4 + random.nextDouble() * 1.6))
+                    .add((random.nextDouble() - 0.5) * 1.6, (random.nextDouble() - 0.6) * 1.2, (random.nextDouble() - 0.5) * 1.6);
+            Vec3 velocity = mouth.subtract(from).scale(0.12 + random.nextDouble() * 0.03);
+            int color = random.nextInt(3) == 0 ? 0x8A5230 : random.nextBoolean() ? 0x5A3218 : 0x6E3E20;
+            CombatFxHandler.spawn(ModParticles.DUST_PUFF, color, from.x, from.y, from.z, velocity.x, velocity.y, velocity.z, 0.7f + random.nextFloat() * 0.5f);
+        }
+        CombatFxHandler.spawn(ModParticles.ENERGY_ORB, 0xFF8AC8, mouth.x, mouth.y, mouth.z, 0, 0, 0, 2.0f);
     }
 
     private static void spawnRocks(ClientLevel level, Entity entity, float rate) {

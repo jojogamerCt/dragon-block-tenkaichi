@@ -1,0 +1,40 @@
+{
+  "name": "form.dbtenkaichi.super_buu",
+  "races": [
+    "majin"
+  ],
+  "parent": "dbtenkaichi:evil_buu",
+  "order": 20,
+  "requirements": {
+    "battlePower": 90000,
+    "stats": {
+      "potential": 20
+    },
+    "unlock": "trial",
+    "requiredForm": "dbtenkaichi:evil_buu"
+  },
+  "bpMultiplier": 100.0,
+  "speedMultiplier": 1.22,
+  "kiDrainPerSecond": 6.0,
+  "staminaDrainPerSecond": 0.0,
+  "masteryPerSecond": 0.001,
+  "masteryDrainReduction": 0.65,
+  "lowMasteryControlPenalty": 0.14,
+  "kiActivationCost": 45.0,
+  "cinematicTicks": 160,
+  "cinematic": "majin_absorption",
+  "quickTicks": 9,
+  "visual": {
+    "body": "super",
+    "scleraColor": "#141018",
+    "eyeColor": "#D01830",
+    "modelHeight": 1.3,
+    "modelWidth": 1.04,
+    "auraColor": "#FF6EB8",
+    "auraSecondary": "#FFD0EA",
+    "auraStyle": "flame",
+    "lightning": false,
+    "auraScale": 1.3,
+    "auraIntensity": 1.15
+  }
+}

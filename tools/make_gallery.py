@@ -271,6 +271,30 @@ def roshi():
          color=(255, 170, 40))
 
 
+def majin():
+    img = grade(cover(shot("kid_buu_full"), W, H)).filter(ImageFilter.GaussianBlur(22))
+    img = ImageEnhance.Brightness(img).enhance(0.5).convert("RGBA")
+    img = burst(img, W // 2, 140, (255, 110, 190), length=1200, alpha=55)
+    cards = [("majin_fat", "MAJIN"), ("evil_buu_full", "EVIL BUU"), ("super_buu_full", "SUPER BUU"), ("kid_buu_full", "KID BUU")]
+    cw, ch = 380, 440
+    gap = 34
+    x0 = (W - cw * 4 - gap * 3) // 2
+    for i, (src, label) in enumerate(cards):
+        card = cover(shot(src), cw, ch, 0.5, 0.36, zoom=1.5)
+        box = (x0 + i * (cw + gap), 250, x0 + i * (cw + gap) + cw, 250 + ch)
+        img = paste_card(img, grade(card), box, border=(255, 140, 200), tilt=(-2.0, -0.7, 0.7, 2.0)[i])
+        img = plain_text(img, label, 44, box[0] + cw // 2, box[3] - 18, fill=(255, 210, 235), anchor="ms", stroke=5, font_path=TITLE_FONT)
+    stills = ["evil_buu_cloud", "super_buu_smoke", "kid_buu_swell"]
+    sw, sh = 520, 292
+    sx0 = (W - sw * 3 - gap * 2) // 2
+    for i, src in enumerate(stills):
+        box = (sx0 + i * (sw + gap), 740, sx0 + i * (sw + gap) + sw, 740 + sh)
+        img = paste_card(img, grade(cover(shot(src), sw, sh)), box, border=(255, 140, 200))
+    img = gradient_text(img, "MAJIN BUU!", 160, W // 2, 24, top=(255, 230, 245), bottom=(255, 70, 160), glow=(255, 60, 150))
+    img = plain_text(img, "Majins are fat by default and transform into Evil, Super and Kid Buu", 42, W // 2, 196)
+    finish(brand(img), "10_majin_buu")
+
+
 def destruction():
     hero("big_bang_crater", "DESTRUCTION!", "Big Bang Attack craters and explosions that grow with your power", "09_destruction", 0.5, 0.5, 1.1)
 
@@ -285,3 +309,4 @@ if __name__ == "__main__":
     kaioken()
     menu()
     roshi()
+    majin()

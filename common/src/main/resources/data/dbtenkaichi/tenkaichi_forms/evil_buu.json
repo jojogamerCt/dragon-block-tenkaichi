@@ -1,0 +1,39 @@
+{
+  "name": "form.dbtenkaichi.evil_buu",
+  "races": [
+    "majin"
+  ],
+  "parent": "dbtenkaichi:base",
+  "order": 10,
+  "requirements": {
+    "battlePower": 20000,
+    "stats": {
+      "potential": 8
+    },
+    "unlock": "trial"
+  },
+  "bpMultiplier": 50.0,
+  "speedMultiplier": 1.15,
+  "kiDrainPerSecond": 3.0,
+  "staminaDrainPerSecond": 0.0,
+  "masteryPerSecond": 0.0012,
+  "masteryDrainReduction": 0.7,
+  "lowMasteryControlPenalty": 0.12,
+  "kiActivationCost": 20.0,
+  "cinematicTicks": 170,
+  "cinematic": "majin_fission",
+  "quickTicks": 8,
+  "visual": {
+    "body": "evil",
+    "skinColor": "#A39FA8",
+    "scleraColor": "#141018",
+    "eyeColor": "#EDEDED",
+    "modelHeight": 1.06,
+    "auraColor": "#9A58C8",
+    "auraSecondary": "#E0C0F4",
+    "auraStyle": "flame",
+    "lightning": false,
+    "auraScale": 1.15,
+    "auraIntensity": 1.0
+  }
+}

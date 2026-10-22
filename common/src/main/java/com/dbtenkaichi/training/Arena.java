@@ -14,7 +14,9 @@ public enum Arena {
     TIME_CHAMBER(26),
     NAMEK(20),
     CELL_RING(15),
-    CANYON(18);
+    CANYON(18),
+    BUU_HOUSE(18),
+    SACRED_WORLD(20);
 
     private final int radius;
 
@@ -40,6 +42,8 @@ public enum Arena {
             case NAMEK -> namek(level, center, random);
             case CELL_RING -> cellRing(level, center, random);
             case CANYON -> canyon(level, center, random);
+            case BUU_HOUSE -> buuHouse(level, center, random);
+            case SACRED_WORLD -> sacredWorld(level, center, random);
         }
     }
 
@@ -251,6 +255,98 @@ public enum Arena {
             int h = 8 + random.nextInt(8);
             for (int y = 0; y < h; y++) {
                 Structures.disc(level, base.above(y), 3.5 - y * 0.12, (y & 3) == 0 ? Blocks.DYED_TERRACOTTA.orange() : Blocks.TERRACOTTA);
+            }
+        }
+    }
+
+    /** Grass and dirt flats with Majin Buu's pink dome house, its head-like holes and the curled antenna on top. */
+    private void buuHouse(ServerLevel level, BlockPos center, RandomSource random) {
+        floor(level, center, 54, Blocks.GRASS_BLOCK, Blocks.DIRT, 3);
+        for (int i = 0; i < 260; i++) {
+            int dx = random.nextInt(109) - 54;
+            int dz = random.nextInt(109) - 54;
+            if (dx * dx + dz * dz > 54 * 54) {
+                continue;
+            }
+            Block patch = random.nextInt(3) == 0 ? Blocks.DIRT_PATH : Blocks.COARSE_DIRT;
+            Structures.set(level, center.offset(dx, -1, dz), patch);
+            Structures.set(level, center.offset(dx + 1, -1, dz), patch);
+        }
+        BlockPos house = center.offset(0, 0, radius + 13);
+        Structures.disc(level, house.below(), 8.5, Blocks.SMOOTH_STONE);
+        Structures.dome(level, house, 7, Blocks.CONCRETE.pink());
+        for (int side = -1; side <= 1; side += 2) {
+            Structures.dome(level, house.offset(side * 8, 0, 3), 4, Blocks.CONCRETE.pink());
+        }
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int y = 0; y < 3; y++) {
+                Structures.set(level, house.offset(dx, y, -7), Blocks.AIR);
+                Structures.set(level, house.offset(dx, y, -6), Blocks.AIR);
+            }
+        }
+        for (int side = -1; side <= 1; side += 2) {
+            for (int i = 0; i < 3; i++) {
+                double angle = Math.toRadians(42 + i * 18) * side;
+                int y = 4 + (i == 1 ? 1 : 0);
+                double r = Math.sqrt(49 - y * y) - 0.4;
+                BlockPos hole = house.offset((int) Math.round(Math.sin(angle) * r), y, (int) Math.round(-Math.cos(angle) * r));
+                Structures.set(level, hole, Blocks.CONCRETE.black());
+            }
+        }
+        int[][] antenna = {{0, 7}, {0, 8}, {0, 9}, {0, 10}, {1, 11}, {2, 11}, {3, 10}};
+        for (int[] a : antenna) {
+            Structures.set(level, house.offset(0, a[1], a[0]), Blocks.CONCRETE.pink());
+        }
+        for (int i = 0; i < 5; i++) {
+            double a = Math.PI * 2 * i / 5 + 1.1;
+            BlockPos base = center.offset((int) Math.round(Math.cos(a) * 46), -1, (int) Math.round(Math.sin(a) * 46));
+            int h = 6 + random.nextInt(8);
+            for (int y = 0; y < h; y++) {
+                Structures.disc(level, base.above(y), 3.6 - y * 0.15, (y & 3) == 0 ? Blocks.DYED_TERRACOTTA.brown() : Blocks.TERRACOTTA);
+            }
+        }
+    }
+
+    /** The Supreme Kai's world: rolling green fields, a stream, rocky outcrops and scattered trees under a clear sky. */
+    private void sacredWorld(ServerLevel level, BlockPos center, RandomSource random) {
+        floor(level, center, 58, Blocks.GRASS_BLOCK, Blocks.DIRT, 3);
+        for (int dx = -58; dx <= 58; dx++) {
+            for (int dz = -58; dz <= 58; dz++) {
+                double d = Math.sqrt(dx * dx + dz * dz);
+                if (d > 58 || d < radius + 6) {
+                    continue;
+                }
+                double hill = Math.sin(dx * 0.13 + 1.3) * Math.cos(dz * 0.11) * 3.2 + (d - radius - 6) * 0.12;
+                int h = (int) Math.round(Math.max(0, hill));
+                for (int y = 0; y < h; y++) {
+                    Structures.set(level, center.offset(dx, y, dz), y == h - 1 ? Blocks.GRASS_BLOCK : Blocks.DIRT);
+                }
+                double stream = Math.abs(dz - 34 - Math.sin(dx * 0.09) * 6);
+                if (stream < 1.6 && h == 0) {
+                    Structures.set(level, center.offset(dx, -1, dz), Blocks.WATER);
+                    Structures.set(level, center.offset(dx, -2, dz), Blocks.SAND);
+                }
+            }
+        }
+        for (int i = 0; i < 6; i++) {
+            double a = Math.PI * 2 * i / 6 + 0.5;
+            BlockPos base = center.offset((int) Math.round(Math.cos(a) * 40), -1, (int) Math.round(Math.sin(a) * 40));
+            int h = 5 + random.nextInt(7);
+            for (int y = 0; y < h; y++) {
+                Structures.disc(level, base.above(y), 2.6 - y * 0.12, (y + i) % 3 == 0 ? Blocks.ANDESITE : Blocks.STONE);
+            }
+        }
+        for (int i = 0; i < 26; i++) {
+            double a = random.nextDouble() * Math.PI * 2;
+            double r = radius + 6 + random.nextDouble() * 26;
+            int x = (int) Math.round(Math.cos(a) * r);
+            int z = (int) Math.round(Math.sin(a) * r);
+            BlockPos ground = center.offset(x, 0, z);
+            while (!level.getBlockState(ground).isAir() && ground.getY() < center.getY() + 12) {
+                ground = ground.above();
+            }
+            if (level.getBlockState(ground.below()).is(Blocks.GRASS_BLOCK)) {
+                Structures.tree(level, ground);
             }
         }
     }

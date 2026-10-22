@@ -265,5 +265,32 @@
       "dbtenkaichi:voice/grunt_3"
     ],
     "subtitle": "subtitles.dbtenkaichi.voice.grunt"
+  },
+  "transform.steam": {
+    "sounds": [
+      "dbtenkaichi:transform/steam_1",
+      "dbtenkaichi:transform/steam_2"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.transform.steam"
+  },
+  "transform.laugh": {
+    "sounds": [
+      "dbtenkaichi:transform/laugh_1",
+      "dbtenkaichi:transform/laugh_2"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.transform.laugh"
+  },
+  "transform.gulp": {
+    "sounds": [
+      "dbtenkaichi:transform/gulp_1"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.transform.gulp"
+  },
+  "transform.stretch": {
+    "sounds": [
+      "dbtenkaichi:transform/stretch_1",
+      "dbtenkaichi:transform/stretch_2"
+    ],
+    "subtitle": "subtitles.dbtenkaichi.transform.stretch"
   }
 }

@@ -74,6 +74,43 @@ public final class EntityVisual {
         return def == null ? appearance.eyeColor : FormDefinition.parseColor(def.visual.eyeColor, appearance.eyeColor);
     }
 
+    public com.dbtenkaichi.client.render.@Nullable MajinBody majinBody() {
+        if (appearance.useOwnSkin) {
+            return null;
+        }
+        FormDefinition def = visualForm();
+        com.dbtenkaichi.client.render.MajinBody body = def == null ? null : com.dbtenkaichi.client.render.MajinBody.byId(def.visual.body);
+        if (body != null) {
+            return body;
+        }
+        return race == Race.MAJIN && appearance.build == Appearance.BUILD_FAT ? com.dbtenkaichi.client.render.MajinBody.FAT : null;
+    }
+
+    public int skinColor() {
+        FormDefinition def = visualForm();
+        return def == null ? appearance.skinColor : FormDefinition.parseColor(def.visual.skinColor, appearance.skinColor);
+    }
+
+    /** The color of the whites of the eyes, or -1 for the normal white. */
+    public int scleraColor() {
+        FormDefinition def = visualForm();
+        return def == null ? -1 : FormDefinition.parseColor(def.visual.scleraColor, -1);
+    }
+
+    public float modelHeight() {
+        FormDefinition def = visualForm();
+        return def == null ? 1.0f : def.visual.modelHeight;
+    }
+
+    public float modelWidth() {
+        FormDefinition def = visualForm();
+        return def == null ? 1.0f : def.visual.modelWidth;
+    }
+
+    public net.minecraft.resources.Identifier skinTexture() {
+        return com.dbtenkaichi.client.render.CustomSkins.textureFor(race, appearance, eyeColor(), hairColor(), skinColor(), scleraColor());
+    }
+
     public int kaioken() {
         return com.dbtenkaichi.form.KaiokenSystem.fromFlags(flags);
     }

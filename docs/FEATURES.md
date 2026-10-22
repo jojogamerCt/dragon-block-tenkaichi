@@ -44,6 +44,9 @@ la colonna "Verifica" indica come è stata provata (vedi `TESTING.md`).
 | Trasformazioni | Sistema data-driven + Super Saiyan (rabbia, cinematica, padronanza, drenaggio) | Implementata | client scriptato |
 | NPC | Maestro: meditazione, controllo Ki, sparring, schivate, insegna il Kamehameha | Implementata | codice, verifica parziale |
 | NPC | Maestro Muten canonico: 165 cm, calvo con ciuffi bianchi, occhiali da sole rossi, barba lunga, camicia hawaiana arancione con triangoli viola e lettere, pantaloncini bianchi, infradito verdi, guscio di tartaruga viola con corda | Implementata | client scriptato (screenshot fronte, lato, retro) |
+| Majin | Corporatura **Grassa** predefinita per i Majin (solo per loro): corpo di Majin Bu a blocchi (`MajinBody.FAT`) con pancia tonda, gilet aperto con bordo dorato, pantaloni larghi, mantello viola, guanti e stivali gialli, cintura con la "M"; tre fori del vapore per lato sulla testa | Implementata | smoke server + client scriptato (screenshot) |
+| Majin | Trasformazioni **Majin Bu malvagio**, **Super Bu** e **Kid Bu** (Potenziale 8/20/35, BP 20.000/90.000/250.000, prova contro se stessi a casa di Majin Bu, nella Stanza dello Spirito e del Tempo e sul pianeta dei Kaioshin) con corpi dedicati, pelle grigia per il malvagio, sclera scura, statura per forma (`modelHeight`, `modelWidth`) e testa più grande per Kid Bu; braccia del corpo anche in prima persona | Implementata | smoke server + client scriptato |
+| Majin | Cutscene canoniche `majin_fission` (vapore dai fori, nube nel cielo che ricade), `majin_absorption` (cioccolato inghiottito, risata, fumo rosa, crescita) e `majin_regression` (vapore, corpo che si gonfia e si restringe lampeggiando tra le forme, esplosione di vapore); nuove tracce `steam`, `smoke`, `grow`, eventi di cioccolato e sbuffo di fumo, suoni di vapore, risata, deglutizione e stiramento; camere che restano sopra il terreno e inquadrano il personaggio | Implementata | client scriptato (20 screenshot delle cutscene) |
 | Forme | Forme equipaggiabili e rimovibili dal menu U: trasformazione e ritorno saltano quelle non equipaggiate; togliere la forma attuale riporta alla forma equipaggiata più vicina; salvate col personaggio | Implementata | smoke server (logica e salvataggio) + client scriptato |
 | NPC | Predone Saiyan: FSM 10 stati, raffiche, cannone, schivate, seconda fase | Implementata | smoke server su entrambi i loader |
 | UI | Stile "Dragon Ball x vanilla": cornici pixel art con contorno e smusso (pulsanti arancio gi, pannelli blu gi, bordi oro, stelle rosse), titoli in stile logo, cielo con stelle, Sfera del Drago a 4 stelle e nuvole a blocchi | Implementata | client scriptato (screenshot) |
@@ -95,7 +98,7 @@ la colonna "Verifica" indica come è stata provata (vedi `TESTING.md`).
   texture separata dalla pelle (anche sulle braccia in prima persona).
 
 ## Non ancora implementato (dal documento di progetto)
-Trasformazioni per le razze non Saiyan, Super Saiyan God e oltre, cutscene dedicate per
+Trasformazioni per le razze non Saiyan (tranne i Majin), Super Saiyan God e oltre, cutscene dedicate per
 fusioni, Sfere del Drago e Shenron, altre dimensioni (Namek, Aldilà con il pianeta di Re Kaioh...), viaggio
 spaziale, story mode (saga dei Saiyan), boss canonici, tornei, gilde/party, musica dinamica, mesh/shader personalizzati
 oltre alle pipeline vanilla, LOD dedicato, benchmark.

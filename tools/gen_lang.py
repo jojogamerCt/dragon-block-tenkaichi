@@ -119,6 +119,10 @@ SOUNDS = {
     "transform.revert": ("Power fades", "La potenza svanisce"),
     "transform.thunder": ("Thunder strikes", "Un fulmine si abbatte"),
     "transform.rumble": ("The ground rumbles", "Il terreno trema"),
+    "transform.steam": ("Steam hisses", "Il vapore sibila"),
+    "transform.laugh": ("Wicked laughter", "Risata malvagia"),
+    "transform.gulp": ("Something is swallowed", "Qualcosa viene inghiottito"),
+    "transform.stretch": ("A body stretches", "Un corpo si deforma"),
     "ui.click": ("Click", "Clic"),
     "ui.confirm": ("Confirm", "Conferma"),
     "ui.open": ("Scouter boots up", "Lo scouter si accende"),
@@ -184,6 +188,11 @@ def build():
     add("technique.dbtenkaichi.death_beam", "Death Beam", "Raggio della Morte")
     add("form.dbtenkaichi.super_saiyan_2", "Super Saiyan 2", "Super Saiyan 2")
     add("form.dbtenkaichi.super_saiyan_3", "Super Saiyan 3", "Super Saiyan 3")
+    add("form.dbtenkaichi.evil_buu", "Evil Buu", "Majin Bu Malvagio")
+    add("form.dbtenkaichi.super_buu", "Super Buu", "Super Bu")
+    add("form.dbtenkaichi.kid_buu", "Kid Buu", "Kid Bu")
+    add("arena.dbtenkaichi.buu_house", "Majin Buu's House", "La casa di Majin Bu")
+    add("arena.dbtenkaichi.sacred_world", "Sacred World of the Kai", "Il pianeta dei Kaioshin")
     add("technique.dbtenkaichi.kaioken", "Kaioken", "Kaioken")
     add("message.dbtenkaichi.kaioken_unknown", "You have not learned the Kaioken.", "Non hai imparato il Kaioken.")
     add("message.dbtenkaichi.kaioken_incompatible", "The Kaioken cannot be used in this form.", "Il Kaioken non si può usare in questa forma.")
@@ -305,7 +314,7 @@ def build():
         add("screen.dbtenkaichi.creator." + k, e, i)
     add("screen.dbtenkaichi.creator.presentation.0", "Masculine", "Maschile")
     add("screen.dbtenkaichi.creator.presentation.1", "Feminine", "Femminile")
-    for n, (e, i) in enumerate([("Slim", "Snella"), ("Athletic", "Atletica"), ("Muscular", "Muscolosa")]):
+    for n, (e, i) in enumerate([("Slim", "Snella"), ("Athletic", "Atletica"), ("Muscular", "Muscolosa"), ("Fat", "Grassa")]):
         add("screen.dbtenkaichi.creator.build.%d" % n, e, i)
     for n, (e, i) in enumerate([("Calm", "Calma"), ("Focused", "Concentrata"), ("Fierce", "Feroce"), ("Cheerful", "Allegra")]):
         add("screen.dbtenkaichi.creator.expression.%d" % n, e, i)

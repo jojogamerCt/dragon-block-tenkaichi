@@ -87,6 +87,8 @@ public final class FormDefinition {
         masteryPerSecond = Math.max(0.0, Math.min(1.0, masteryPerSecond));
         masteryDrainReduction = Math.max(0.0, Math.min(1.0, masteryDrainReduction));
         lowMasteryControlPenalty = Math.max(0.0, Math.min(0.9, lowMasteryControlPenalty));
+        visual.modelHeight = Math.max(0.3f, Math.min(3.0f, visual.modelHeight));
+        visual.modelWidth = Math.max(0.3f, Math.min(3.0f, visual.modelWidth));
         cinematicTicks = Math.max(0, Math.min(400, cinematicTicks));
         quickTicks = Math.max(0, Math.min(60, quickTicks));
     }
@@ -110,6 +112,11 @@ public final class FormDefinition {
         public boolean lightning;
         public float auraScale = 1.0f;
         public float auraIntensity = 1.0f;
+        public String body;
+        public String skinColor;
+        public String scleraColor;
+        public float modelHeight = 1.0f;
+        public float modelWidth = 1.0f;
     }
 
     public static int parseColor(String value, int fallback) {

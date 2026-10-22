@@ -693,6 +693,51 @@ def generate():
 
     put("voice.grunt", [grunt() for _ in range(3)])
 
+    def steam(seconds):
+        k = np.linspace(0, 1, n_of(seconds))
+        jet = bandpass(white(seconds, rng), 2200, 9000) * (0.75 + 0.25 * np.sin(2 * np.pi * 11.0 * tt(seconds)))
+        body = bandpass(pink(seconds, rng), 500, 2400) * 0.45
+        whistle = resonator(white(seconds, rng), 3400, 40) * 0.12
+        e = env_adsr(seconds, 0.03, 0.15, 0.85, seconds * 0.45, 1.6)
+        return finish(mix(jet, body, whistle) * e * (1.0 - 0.3 * k), 0.85, 0.12, 0.6)
+
+    put("transform.steam", [steam(1.4), steam(1.9)])
+
+    def laugh(f0, beats):
+        s = 0.2 + beats * 0.24 + 0.5
+        out = np.zeros(n_of(s))
+        for i in range(beats):
+            syl = 0.2
+            f = glide(f0 * (1.12 - i * 0.03), f0 * (0.92 - i * 0.03), syl, 0.8)
+            v = voice(rng, syl, f, "aa", "a", 1.3, 0.55) * env_adsr(syl, 0.012, 0.05, 0.7, 0.08, 1.4)
+            breath = bandpass(white(0.06, rng), 900, 4000) * env_exp(0.06, 0.004, 0.02) * 0.25
+            out = out + at(v, 0.05 + i * 0.24, s) + at(breath, 0.02 + i * 0.24, s)
+        return finish(out, 0.9, 0.22, 0.9)
+
+    put("transform.laugh", [laugh(118, 5), laugh(105, 6)])
+
+    def gulp():
+        s = 0.7
+        swallow = sweep_filter(pink(s, rng), 900, 180, 4.0, "band", 24) * env_exp(s, 0.01, 0.12) * 1.2
+        pop = thump(260, 90, s, 0.05) * 0.9
+        drop = at(thump(140, 55, 0.4, 0.07) * 0.8, 0.16, s)
+        return finish(mix(swallow, pop, drop), 0.85, 0.12, 0.5)
+
+    put("transform.gulp", [gulp()])
+
+    def stretch():
+        s = 1.1
+        f = glide(90, 260, s * 0.6, 1.4)
+        f = pad(f, s)
+        f[f == 0] = 260
+        wobble = 1.0 + 0.08 * np.sin(2 * np.pi * 9.0 * tt(s))
+        rubber = lowpass(osc(f * wobble, s, "saw"), 1800, 2) * env_adsr(s, 0.02, 0.2, 0.7, 0.35) * 0.5
+        squeak = resonator(white(s, rng) * env_exp(s, 0.05, 0.25), 1300, 12) * 0.25
+        mass = thump(70, 40, s, 0.3) * 0.6
+        return finish(mix(rubber, squeak, mass), 0.85, 0.15, 0.6)
+
+    put("transform.stretch", [stretch(), stretch()])
+
     with open(os.path.join(ASSETS, "sounds.json"), "w", encoding="utf-8") as f:
         json.dump(sounds, f, indent=2)
     print("generated %d sound events" % len(sounds))

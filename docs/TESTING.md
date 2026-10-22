@@ -50,14 +50,16 @@ Preparazione: copiare il mondo del server di test in `runs/client/saves/dbt_test
 ./scripts/gw.sh :neoforge:runClient -PdbtSmoke
 ```
 
-Il client entra nel mondo con Quick Play ed esegue `ClientSmokeTest`, ridotto alle ultime novità: fotografa il
-Maestro Muten da davanti, di lato, da dietro, di tre quarti e da vicino, poi rimuove e rimette le forme dal menu
-U controllando che la trasformazione salti quelle non equipaggiate (base -> Super Saiyan 2), che il ritorno salti
-il Super Saiyan e che togliere la forma attuale riporti alla base. Salva gli screenshot in
+Il client entra nel mondo con Quick Play ed esegue `ClientSmokeTest`, ridotto alle ultime novità: azzera il
+personaggio e lo ricrea come Majin con l'aspetto predefinito, fotografa il corpo grasso davanti, di lato, da dietro e
+in prima persona, poi avvia le cutscene di Majin Bu malvagio, Super Bu e Kid Bu fotografandone i momenti chiave e il
+corpo di ogni forma. Registra razza, corporatura, forma, corpo, pelle, sclera e statura. Salva gli screenshot in
 `runs/client/screenshots/dbt_*.png` e chiude il gioco.
 
-Lo smoke test del server verifica la registrazione dei 40 eventi sonori, i suoni vanilla sovrapposti e la logica
-delle forme equipaggiate (prossima forma, ritorno, salvataggio e caricamento).
+Lo smoke test del server verifica le tre forme Majin (datapack, razza, corpo, cutscene, padre, sblocco con prova,
+pelle grigia, stature, potenza crescente), la catena di trasformazione dei Majin (anche con una forma non
+equipaggiata) e quella dei Saiyan, le arene delle prove, la corporatura grassa (predefinita, solo per i Majin,
+salvata e caricata), i 44 eventi sonori e costruisce le arene della casa di Majin Bu e del pianeta dei Kaioshin.
 
 ## 5. Verificato visivamente (dagli screenshot)
 

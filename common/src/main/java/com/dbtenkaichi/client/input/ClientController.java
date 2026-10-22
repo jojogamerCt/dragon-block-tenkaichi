@@ -365,6 +365,7 @@ public final class ClientController {
         LockOn.reset();
         ClientState.clear();
         com.dbtenkaichi.client.render.CustomSkins.clear();
+        com.dbtenkaichi.client.render.MajinBody.clear();
         ConfigManager.clearServerConfig();
         com.dbtenkaichi.form.FormRegistry.clearClient();
     }

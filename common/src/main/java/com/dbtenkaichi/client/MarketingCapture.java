@@ -225,13 +225,51 @@ public final class MarketingCapture {
             mc.gui.setScreen(new com.dbtenkaichi.client.screen.CharacterCreatorScreen(tag));
         });
         at(t + 16, mc -> shot(mc, "creator"));
-        end = t + 20;
+        end = majin(t + 20);
+    }
+
+    /** Recreates the character as a Majin and films the fat body and the three Buu transformations in a row. */
+    private static int majin(int t) {
+        at(t, mc -> {
+            mc.gui.setScreen(null);
+            command(mc, "tenkaichi reset " + name);
+        });
+        at(t + 10, mc -> {
+            Appearance a = Appearance.defaultsFor(Race.MAJIN);
+            Services.NETWORK.sendToServer(new Packets.CreateCharacter(Race.MAJIN.ordinal(), a.presentation, 1.0f, a.build, a.skinColor, a.eyeStyle, a.eyeColor,
+                    a.eyebrowStyle, a.hairStyle, a.hairColor, a.expression, a.auraColor, a.outfit, a.outfitPrimary, a.outfitSecondary, a.featureColor, false, false));
+            mc.gui.setScreen(null);
+        });
+        at(t + 20, mc -> {
+            command(mc, "tenkaichi setstat " + name + " all 60");
+            command(mc, "tenkaichi restore " + name);
+            command(mc, "clear " + name);
+            stage(mc, Landmarks.KORIN_TOWER, -36, 30, 135.0f);
+            hideHud(mc, true);
+        });
+        at(t + 30, mc -> command(mc, "execute at " + name + " run fill ~-14 ~ ~-14 ~14 ~8 ~14 air replace #minecraft:replaceable_by_trees"));
+        at(t + 44, mc -> {
+            mc.options.setCameraType(CameraType.THIRD_PERSON_FRONT);
+            mc.gui.setScreen(new Preview(20.0f));
+        });
+        at(t + 48, mc -> shot(mc, "majin_fat"));
+        at(t + 50, mc -> mc.gui.setScreen(null));
+        t = transformation(t + 60, "dbtenkaichi:evil_buu", "evil_buu", new int[]{34, 85, 160}, new String[]{"steam", "cloud", "reveal"}, false);
+        t = transformation(t, "dbtenkaichi:super_buu", "super_buu", new int[]{22, 106, 150}, new String[]{"chocolate", "smoke", "reveal"}, false);
+        t = transformation(t, "dbtenkaichi:kid_buu", "kid_buu", new int[]{36, 76, 169}, new String[]{"steam", "swell", "reveal"}, false);
+        return t;
     }
 
     private static int transformation(int t, String form, String label, int[] offsets, String[] names) {
+        return transformation(t, form, label, offsets, names, true);
+    }
+
+    private static int transformation(int t, String form, String label, int[] offsets, String[] names, boolean revert) {
         at(t, mc -> {
             command(mc, "tenkaichi restore " + name);
-            forceForm(mc, null);
+            if (revert) {
+                forceForm(mc, null);
+            }
         });
         at(t + 6, mc -> {
             hideHud(mc, false);

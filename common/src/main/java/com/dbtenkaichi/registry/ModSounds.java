@@ -44,6 +44,10 @@ public final class ModSounds {
     public static final Supplier<SoundEvent> REVERT = register("transform.revert");
     public static final Supplier<SoundEvent> TRANSFORM_THUNDER = register("transform.thunder");
     public static final Supplier<SoundEvent> TRANSFORM_RUMBLE = register("transform.rumble");
+    public static final Supplier<SoundEvent> TRANSFORM_STEAM = register("transform.steam");
+    public static final Supplier<SoundEvent> TRANSFORM_LAUGH = register("transform.laugh");
+    public static final Supplier<SoundEvent> TRANSFORM_GULP = register("transform.gulp");
+    public static final Supplier<SoundEvent> TRANSFORM_STRETCH = register("transform.stretch");
     public static final Supplier<SoundEvent> UI_CLICK = register("ui.click");
     public static final Supplier<SoundEvent> UI_CONFIRM = register("ui.confirm");
     public static final Supplier<SoundEvent> UI_OPEN = register("ui.open");

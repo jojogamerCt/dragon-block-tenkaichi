@@ -22,12 +22,16 @@ public final class CustomSkins {
     }
 
     public static Identifier textureFor(Race race, Appearance a, int eyeColor, int hairColor) {
-        long key = hash(race, a, eyeColor, hairColor);
+        return textureFor(race, a, eyeColor, hairColor, a.skinColor, -1);
+    }
+
+    public static Identifier textureFor(Race race, Appearance a, int eyeColor, int hairColor, int skinColor, int scleraColor) {
+        long key = hash(race, a, eyeColor, hairColor) * 31L + skinColor * 1_000_003L + scleraColor;
         Identifier existing = CACHE.get(key);
         if (existing != null) {
             return existing;
         }
-        NativeImage image = new SkinPainter(race, a, eyeColor, hairColor).paint();
+        NativeImage image = new SkinPainter(race, a, eyeColor, hairColor, skinColor, scleraColor).paint();
         Identifier id = Tenkaichi.id("dynamic/skin_" + (counter++));
         Minecraft.getInstance().getTextureManager().register(id, new DynamicTexture(id::toString, image));
         CACHE.put(key, id);
@@ -64,7 +68,7 @@ public final class CustomSkins {
             copy.outfit = style;
             copy.outfitPrimary = spec[piece * 3 + 1];
             copy.outfitSecondary = spec[piece * 3 + 2];
-            NativeImage layer = new SkinPainter(race, copy, 0, 0).paintOutfit();
+            NativeImage layer = new SkinPainter(race, copy, 0, 0, copy.skinColor, -1).paintOutfit();
             for (int y = 0; y < 128; y++) {
                 for (int x = 0; x < 128; x++) {
                     if (piece(x / 2, y / 2) == piece) {
@@ -155,14 +159,18 @@ public final class CustomSkins {
         private final int hairColor;
         private final boolean bald;
         private final int skin;
+        private final int white;
+        private final int whiteShade;
 
-        SkinPainter(Race race, Appearance a, int eyeColor, int hairColor) {
+        SkinPainter(Race race, Appearance a, int eyeColor, int hairColor, int skin, int sclera) {
             this.race = race;
             this.a = a;
             this.eyeColor = eyeColor;
             this.hairColor = hairColor;
             this.bald = HairStyle.byOrdinal(a.hairStyle) == HairStyle.BALD || !race.hasHair();
-            this.skin = a.skinColor;
+            this.skin = skin;
+            this.white = sclera < 0 ? 0xF4F4F4 : sclera;
+            this.whiteShade = sclera < 0 ? 0xE6E6E6 : shade(sclera, 0.85f);
         }
 
         NativeImage paint() {
@@ -420,12 +428,12 @@ public final class CustomSkins {
                     line(x, y + 1, x + 4, y + 1, lid);
                     px(x + (right ? 1 : 2), y + 2, eyeColor);
                     px(x + (right ? 2 : 3), y + 2, shade(eyeColor, 0.6f));
-                    px(x + (right ? 0 : 1), y + 2, 0xF4F4F4);
+                    px(x + (right ? 0 : 1), y + 2, white);
                 }
                 case 2 -> {
                     line(x, y, x + 4, y, lid);
                     for (int dx = 0; dx < 5; dx++) {
-                        px(x + dx, y + 1, dx == (right ? 1 : 3) || dx == 2 ? eyeColor : 0xF4F4F4);
+                        px(x + dx, y + 1, dx == (right ? 1 : 3) || dx == 2 ? eyeColor : white);
                     }
                     px(x + 2, y + 2, shade(eyeColor, 0.5f));
                 }
@@ -433,7 +441,7 @@ public final class CustomSkins {
                     line(x, y - 1, x + 4, y - 1, lid);
                     for (int dy = 0; dy < 3; dy++) {
                         for (int dx = 0; dx < 5; dx++) {
-                            px(x + dx, y + dy, 0xF8F8F8);
+                            px(x + dx, y + dy, white);
                         }
                     }
                     for (int dy = 0; dy < 3; dy++) {
@@ -445,8 +453,8 @@ public final class CustomSkins {
                 default -> {
                     line(x, y, x + 4, y, lid);
                     for (int dx = 0; dx < 5; dx++) {
-                        px(x + dx, y + 1, 0xF4F4F4);
-                        px(x + dx, y + 2, 0xE6E6E6);
+                        px(x + dx, y + 1, white);
+                        px(x + dx, y + 2, whiteShade);
                     }
                     int ix = x + (right ? 1 : 2);
                     px(ix, y + 1, eyeColor);
@@ -463,6 +471,21 @@ public final class CustomSkins {
             for (int i = 0; i <= steps; i++) {
                 float t = steps == 0 ? 0 : (float) i / steps;
                 px(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t), rgb);
+            }
+        }
+
+        /** The three steam holes Majin Buu has on each side of his head. */
+        private void steamHoles(int u, int v) {
+            int[][] holes = {{2, 2}, {4, 1}, {6, 2}};
+            for (int[] hole : holes) {
+                int x = u * S + hole[0] * S;
+                int y = v * S + hole[1] * S;
+                px(x, y, shade(skin, 0.32f));
+                px(x + 1, y, shade(skin, 0.4f));
+                px(x, y + 1, shade(skin, 0.45f));
+                px(x + 1, y + 1, shade(skin, 0.55f));
+                px(x - 1, y, shade(skin, 1.08f));
+                px(x + 2, y + 1, shade(skin, 1.08f));
             }
         }
 
@@ -541,6 +564,8 @@ public final class CustomSkins {
                     for (int dx = 0; dx < 16; dx++) {
                         px(8 * S + dx, 8 * S + 1, shade(skin, 0.85f));
                     }
+                    steamHoles(0, 8);
+                    steamHoles(16, 8);
                     for (int dy = 12; dy < 22; dy += 3) {
                         for (int dx = 2; dx < 14; dx++) {
                             darken(20 * S + dx, 20 * S + dy, 0.93f);

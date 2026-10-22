@@ -53,6 +53,9 @@ public class FighterNpcRenderer extends LivingEntityRenderer<FighterNpc, AvatarR
             float h = visual.appearance.height;
             poseStack.scale(h, h, h);
         }
+        if (visual != null && visual.majinBody() != null) {
+            MajinBody.applyScale(poseStack, visual);
+        }
     }
 
     @Override
@@ -61,7 +64,7 @@ public class FighterNpcRenderer extends LivingEntityRenderer<FighterNpc, AvatarR
         if (visual == null) {
             return DefaultPlayerSkin.getDefaultSkin().body().texturePath();
         }
-        return CustomSkins.textureFor(visual.race, visual.appearance, visual.eyeColor(), visual.hairColor());
+        return visual.skinTexture();
     }
 
     @Override

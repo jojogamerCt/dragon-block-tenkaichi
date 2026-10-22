@@ -15,6 +15,9 @@ public final class Cinematics {
         register(superSaiyan2Awakening());
         register(superSaiyan3Awakening());
         register(darkRage());
+        register(majinFission());
+        register(majinAbsorption());
+        register(majinRegression());
         register(powerUp());
     }
 
@@ -142,6 +145,121 @@ public final class Cinematics {
                 .event(0.25f, EventKind.LIGHTNING, 1.0f).event(0.25f, EventKind.SOUND_THUNDER, 0.8f)
                 .event(0.40f, EventKind.SOUND_SCREAM, 0.8f)
                 .event(0.55f, EventKind.BURST, 1.6f).event(0.55f, EventKind.SOUND_BURST, 0.9f).event(0.55f, EventKind.GROUND_BREAK, 1.5f);
+    }
+
+    /**
+     * Evil Buu: Buu's rage boils over, steam blasts out of the holes in his head and rises into a cloud that congeals in
+     * the sky, drops back down and leaves the thin, grey Evil Buu standing in the smoke.
+     */
+    private static CinematicScript majinFission() {
+        return CinematicScript.create("majin_fission")
+                .colors(0xFFFFFF, 0x1A0E1C, 0xE0C8F0)
+                .cut(0.00f, 0.13f, cam(0, 2, 1.25f, 0.9f), cam(0, 2, 1.05f, 0.91f))
+                .cut(0.13f, 0.28f, cam(80, 0, 2.6f, 0.82f), cam(70, -2, 2.2f, 0.84f))
+                .shot(0.28f, 0.42f, cam(25, -24, 5.0f, 0.5f), cam(10, -38, 6.0f, 0.6f))
+                .shot(0.42f, 0.58f, cam(0, -8, 11.0f, 2.2f), cam(20, -10, 12.0f, 2.6f))
+                .cut(0.58f, 0.72f, cam(-30, -6, 6.5f, 0.6f), cam(-15, -4, 5.5f, 0.6f))
+                .shot(0.72f, 0.86f, cam(0, -12, 5.0f, 0.5f), cam(0, -6, 3.4f, 0.6f))
+                .shot(0.86f, 1.00f, cam(16, 3, 1.8f, 0.9f), cam(6, 2, 1.5f, 0.92f))
+                .darken(0.00f, 0.12f, 0.0f, 0.5f).darken(0.12f, 0.72f, 0.5f, 0.62f).darken(0.72f, 0.86f, 0.62f, 0.0f)
+                .shake(0.00f, 0.13f, 0.1f, 0.3f).shake(0.13f, 0.28f, 0.4f, 0.8f).shake(0.28f, 0.58f, 0.5f, 0.6f).shake(0.58f, 0.66f, 1.2f, 0.6f)
+                .steam(0.03f, 0.13f, 0.15f, 0.5f).steam(0.13f, 0.28f, 0.8f, 1.6f).steam(0.28f, 0.50f, 1.6f, 0.6f)
+                .smoke(0.26f, 0.42f, 0xE6E2EA, 1.6f, 1.2f, 0.3f, 0.9f)
+                .smoke(0.40f, 0.60f, 0xC8C2D2, 4.2f, 3.0f, 1.2f, 1.8f)
+                .smoke(0.58f, 0.74f, 0xD0C8DA, 0.55f, 1.3f, 1.6f, 1.0f)
+                .smoke(0.74f, 0.80f, 0xD0C8DA, 0.5f, 2.2f, 0.5f, 0.0f)
+                .aura(0.00f, 0.58f, 0.0f, 0.2f).aura(0.74f, 0.86f, 0.4f, 1.1f).aura(0.86f, 1.0f, 0.25f, 0.2f)
+                .rocks(0.13f, 0.30f, 0.3f, 0.6f)
+                .flash(0.58f, 0.62f, 0.0f, 0.6f).flash(0.62f, 0.68f, 0.6f, 0.0f)
+                .formFrom(0.66f)
+                .revealAt(0.86f)
+                .event(0.00f, EventKind.SOUND_RUMBLE, 0.7f)
+                .event(0.03f, EventKind.SOUND_STEAM, 0.6f)
+                .event(0.13f, EventKind.SOUND_STEAM, 1.2f).event(0.13f, EventKind.SOUND_SCREAM, 0.7f)
+                .event(0.20f, EventKind.SOUND_STEAM, 1.3f)
+                .event(0.28f, EventKind.SOUND_RUMBLE, 1.1f).event(0.28f, EventKind.SOUND_STEAM, 1.0f)
+                .event(0.44f, EventKind.SOUND_THUNDER, 0.6f)
+                .event(0.58f, EventKind.SMOKE_BURST, 1.2f).event(0.58f, EventKind.SOUND_BURST, 0.9f).event(0.58f, EventKind.GROUND_BREAK, 1.2f)
+                .event(0.74f, EventKind.SOUND_POWER, 0.7f)
+                .event(0.74f, EventKind.BURST, 1.2f)
+                .event(0.86f, EventKind.SOUND_LAUGH, 1.0f);
+    }
+
+    /**
+     * Super Buu: Evil Buu blows the candy beam back, the chocolate flies into his mouth, he laughs and pink smoke pours
+     * out of his body; inside the cloud the body swells, then the smoke is blown away to reveal the towering Super Buu.
+     */
+    private static CinematicScript majinAbsorption() {
+        return CinematicScript.create("majin_absorption")
+                .colors(0xFFE8F4, 0x1A0A14, 0xFFC0E0)
+                .cut(0.00f, 0.12f, cam(0, 2, 1.2f, 0.9f), cam(0, 2, 1.05f, 0.91f))
+                .cut(0.12f, 0.30f, cam(75, 2, 3.0f, 0.75f), cam(65, 0, 2.6f, 0.78f))
+                .cut(0.30f, 0.42f, cam(-14, 6, 1.15f, 0.92f), cam(-8, 4, 1.0f, 0.93f))
+                .shot(0.42f, 0.56f, cam(0, -4, 2.6f, 0.6f), cam(0, -8, 6.5f, 0.55f))
+                .shot(0.56f, 0.76f, cam(-40, -6, 7.0f, 0.6f), cam(40, -10, 7.5f, 0.7f))
+                .cut(0.76f, 0.86f, cam(0, -18, 5.0f, 0.4f), cam(0, -16, 4.2f, 0.45f))
+                .shot(0.86f, 1.00f, cam(22, -8, 4.0f, 0.6f), cam(10, -5, 3.3f, 0.66f))
+                .darken(0.00f, 0.10f, 0.0f, 0.4f).darken(0.10f, 0.76f, 0.4f, 0.55f).darken(0.76f, 0.86f, 0.55f, 0.0f)
+                .shake(0.30f, 0.42f, 0.3f, 0.6f).shake(0.42f, 0.56f, 0.9f, 0.7f).shake(0.56f, 0.76f, 0.5f, 0.9f).shake(0.76f, 0.86f, 1.5f, 0.3f)
+                .smoke(0.42f, 0.56f, 0xFF8AC8, 0.5f, 1.4f, 0.6f, 1.6f)
+                .smoke(0.56f, 0.76f, 0xFF7ABC, 0.55f, 1.9f, 1.8f, 1.8f)
+                .smoke(0.76f, 0.81f, 0xFF9ACD, 0.55f, 2.8f, 1.0f, 0.0f)
+                .grow(0.58f, 0.72f, 0.8f, 1.0f)
+                .aura(0.00f, 0.42f, 0.0f, 0.15f).aura(0.76f, 0.86f, 1.1f, 0.5f).aura(0.86f, 1.0f, 0.3f, 0.25f)
+                .rocks(0.56f, 0.86f, 0.4f, 0.8f)
+                .flash(0.42f, 0.45f, 0.5f, 0.0f).flash(0.76f, 0.80f, 0.0f, 0.9f).flash(0.80f, 0.86f, 0.9f, 0.0f)
+                .formFrom(0.58f)
+                .revealAt(0.86f)
+                .event(0.00f, EventKind.SOUND_RUMBLE, 0.6f)
+                .event(0.04f, EventKind.SOUND_STEAM, 0.5f)
+                .event(0.10f, EventKind.CHOCOLATE, 1.0f).event(0.16f, EventKind.CHOCOLATE, 0.8f)
+                .event(0.26f, EventKind.SOUND_GULP, 1.0f)
+                .event(0.31f, EventKind.SOUND_LAUGH, 1.0f)
+                .event(0.42f, EventKind.SMOKE_BURST, 1.0f).event(0.42f, EventKind.SOUND_STEAM, 1.4f).event(0.42f, EventKind.SOUND_RUMBLE, 1.0f)
+                .event(0.56f, EventKind.SOUND_STRETCH, 1.0f).event(0.66f, EventKind.SOUND_STRETCH, 0.9f)
+                .event(0.76f, EventKind.BURST, 1.6f).event(0.76f, EventKind.SOUND_BURST, 1.2f).event(0.76f, EventKind.GROUND_BREAK, 2.0f)
+                .event(0.76f, EventKind.SMOKE_BURST, 1.0f)
+                .event(0.86f, EventKind.SOUND_POWER, 0.9f)
+                .event(0.92f, EventKind.SOUND_LAUGH, 0.8f);
+    }
+
+    /**
+     * Kid Buu: with Good Buu pulled out, Super Buu clutches his head while steam spews from it, balloons into a hulking
+     * giant, then shrinks fast, flickering through his old forms, until a steam blast leaves the small, manic Kid Buu.
+     */
+    private static CinematicScript majinRegression() {
+        return CinematicScript.create("majin_regression")
+                .colors(0xFFF0FA, 0x14060E, 0xFFB0E0)
+                .cut(0.00f, 0.12f, cam(0, 2, 1.3f, 0.9f), cam(0, 2, 1.1f, 0.91f))
+                .cut(0.12f, 0.28f, cam(-35, -4, 4.4f, 0.6f), cam(-25, -4, 3.8f, 0.62f))
+                .shot(0.28f, 0.44f, cam(0, -8, 4.2f, 0.55f), cam(0, -14, 8.0f, 0.65f))
+                .cut(0.44f, 0.62f, cam(30, -4, 3.4f, 0.5f), cam(20, -6, 3.0f, 0.5f))
+                .cut(0.62f, 0.72f, cam(0, -10, 6.5f, 0.5f), cam(0, -8, 7.5f, 0.5f))
+                .shot(0.72f, 0.86f, cam(0, -6, 4.6f, 0.45f), cam(0, -2, 3.2f, 0.5f))
+                .shot(0.86f, 1.00f, cam(14, 4, 2.1f, 0.9f), cam(0, 2, 1.8f, 0.92f))
+                .darken(0.00f, 0.12f, 0.2f, 0.55f).darken(0.12f, 0.62f, 0.55f, 0.7f).darken(0.62f, 0.74f, 0.5f, 0.0f)
+                .shake(0.00f, 0.28f, 0.3f, 0.9f).shake(0.28f, 0.44f, 0.9f, 1.4f).shake(0.44f, 0.62f, 0.7f, 1.0f).shake(0.62f, 0.72f, 1.8f, 0.5f)
+                .steam(0.00f, 0.12f, 0.6f, 1.0f).steam(0.12f, 0.28f, 1.2f, 1.8f).steam(0.28f, 0.44f, 1.6f, 1.2f).steam(0.44f, 0.62f, 1.0f, 0.6f)
+                .grow(0.28f, 0.44f, 1.0f, 1.45f).grow(0.44f, 0.62f, 1.45f, 1.0f)
+                .flicker(0.46f, 0.60f)
+                .smoke(0.44f, 0.62f, 0xF6D8EA, 0.5f, 1.4f, 0.2f, 0.8f)
+                .smoke(0.62f, 0.74f, 0xF2E8F0, 0.5f, 2.6f, 1.8f, 0.6f)
+                .smoke(0.74f, 0.80f, 0xF2E8F0, 0.4f, 3.0f, 0.5f, 0.0f)
+                .aura(0.00f, 0.44f, 0.2f, 0.6f).aura(0.62f, 0.72f, 1.3f, 0.6f).aura(0.72f, 0.86f, 0.5f, 0.2f).aura(0.86f, 1.0f, 0.15f, 0.15f)
+                .rocks(0.12f, 0.62f, 0.4f, 1.0f)
+                .flash(0.46f, 0.48f, 0.35f, 0.0f).flash(0.53f, 0.55f, 0.35f, 0.0f).flash(0.60f, 0.64f, 0.0f, 1.0f).flash(0.64f, 0.72f, 1.0f, 0.0f)
+                .formFrom(0.60f)
+                .revealAt(0.86f)
+                .event(0.00f, EventKind.SOUND_STEAM, 1.0f).event(0.00f, EventKind.SOUND_RUMBLE, 0.8f)
+                .event(0.06f, EventKind.SOUND_SCREAM, 0.8f)
+                .event(0.12f, EventKind.SOUND_STEAM, 1.4f).event(0.22f, EventKind.SOUND_STEAM, 1.4f)
+                .event(0.28f, EventKind.SOUND_STRETCH, 1.3f).event(0.28f, EventKind.SOUND_RUMBLE, 1.2f)
+                .event(0.36f, EventKind.SOUND_STRETCH, 1.1f).event(0.44f, EventKind.SOUND_STRETCH, 1.2f)
+                .event(0.50f, EventKind.SOUND_STEAM, 1.0f)
+                .event(0.62f, EventKind.BURST, 2.4f).event(0.62f, EventKind.SOUND_BURST, 1.3f).event(0.62f, EventKind.GROUND_BREAK, 2.4f)
+                .event(0.62f, EventKind.SMOKE_BURST, 1.6f)
+                .event(0.86f, EventKind.SOUND_CACKLE, 1.0f)
+                .event(0.94f, EventKind.SOUND_POWER, 0.7f);
     }
 
     private static CinematicScript powerUp() {

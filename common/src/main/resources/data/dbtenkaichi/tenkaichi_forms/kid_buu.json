@@ -1,0 +1,41 @@
+{
+  "name": "form.dbtenkaichi.kid_buu",
+  "races": [
+    "majin"
+  ],
+  "parent": "dbtenkaichi:super_buu",
+  "order": 30,
+  "requirements": {
+    "battlePower": 250000,
+    "stats": {
+      "potential": 35
+    },
+    "unlock": "trial",
+    "requiredForm": "dbtenkaichi:super_buu"
+  },
+  "bpMultiplier": 400.0,
+  "speedMultiplier": 1.38,
+  "kiDrainPerSecond": 12.0,
+  "staminaDrainPerSecond": 0.4,
+  "healthDrainPerSecond": 0.0,
+  "masteryPerSecond": 0.0008,
+  "masteryDrainReduction": 0.6,
+  "lowMasteryControlPenalty": 0.15,
+  "kiActivationCost": 80.0,
+  "cinematicTicks": 180,
+  "cinematic": "majin_regression",
+  "quickTicks": 10,
+  "visual": {
+    "body": "kid",
+    "scleraColor": "#141018",
+    "eyeColor": "#D01830",
+    "modelHeight": 0.7,
+    "modelWidth": 0.96,
+    "auraColor": "#FF4AA8",
+    "auraSecondary": "#F4B0FF",
+    "auraStyle": "flame",
+    "lightning": false,
+    "auraScale": 1.25,
+    "auraIntensity": 1.3
+  }
+}
